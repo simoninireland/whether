@@ -1,2 +1,6 @@
 python-dotenv
 tb-mqtt-client
+adafruit-circuitpython-lis3dh
+adafruit-circuitpython-dht
+adafruit-circuitpython-bme280
+adafruit-circuitpython-mcp3xxx
