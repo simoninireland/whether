@@ -1,0 +1,6 @@
+pyright
+rope
+flake8
+black
+twine
+pylint
