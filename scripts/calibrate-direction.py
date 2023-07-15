@@ -1,5 +1,6 @@
 #!/bin/env python
 
+from sys import exit
 from datetime import datetime
 import busio
 import digitalio
@@ -13,9 +14,9 @@ mcp = MCP.MCP3008(spi, cs)
 
 channel = AnalogIn(mcp, MCP.P0)
 
-fn = "calibrate-direction.py"
-sensitivity = 0.1
-directions = ["N", "NNE", "NE", "ENW",
+fn = "windDirections.py"
+sensitivity = 0.04
+directions = ["N", "NNE", "NE", "ENE",
               "E", "ESE", "SE", "SSE",
               "S", "SSW", "SW", "WSW",
               "W", "WNW", "NW", "NNW"]
@@ -34,20 +35,26 @@ print("{dir}: {val}".format(dir=directions[0], val=v))
 
 # read the rest
 for i in range(1, len(directions)):
-    # wait for the value to change by the sensitivity, making sure it
-    # doesn't go back to a previous value
+    # wait for the value to change by the sensitivity
     while True:
         vnow = channel.value
         if abs(v - vnow) > v * sensitivity:
-            if abs(values[directions[i - 1]] - vnow) < values[directions[i - 1]] * sensitivity:
-                print("Going backwards?")
-            else:
-                break
+            break
 
     # we have a new value
     v = vnow
     values[directions[i]] = v
     print("{dir}: {val}".format(dir=directions[i], val=v))
+
+# check we get back to North at the right point
+while True:
+    vnow = channel.value
+    if abs(v - vnow) > v * sensitivity:
+        break
+print("{dir}: {val}".format(dir=directions[0], val=vnow))
+if abs(vnow - values[directions[0]]) > vnow * sensitivity:
+    print("Hmmm... we didn't seem to return to North")
+    exit(1)
 
 # write out the calibrated constants
 ts = datetime.now()
@@ -62,7 +69,9 @@ with open(fn, "w") as fh:
     for i in range(len(directions)):
         dir = directions[i]
         val = values[dir]
-        print(f"   '{dir}'={val}", file=fh)
+        print(f"   {dir}={val},", file=fh)
     print(")", file=fh)
     print(f"windDirectionSensitivity = {sensitivity}", file=fh)
 print(f"The calibration values have been written to {fn}")
+
+exit(0)
