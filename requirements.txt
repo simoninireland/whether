@@ -1,6 +1,7 @@
 python-dotenv
 tb-mqtt-client
 requests
+adafruit-blinka
 adafruit-circuitpython-lis3dh
 adafruit-circuitpython-dht
 adafruit-circuitpython-bme280
