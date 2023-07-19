@@ -27,15 +27,36 @@ VERSION = 0.1.0
 SOURCES_SETUP_IN = setup.py.in
 SOURCES_CODE_INIT = \
 	whether/__init__.py
-SOURCES_CODE =
+SOURCES_CODE = \
+	whether/ringbuffer.py \
+	whether/sensortypes.py \
+	whether/DHT22.py \
+	whether/anemometer.py
+SOURCES_TESTS_INIT = \
+	test/__init__.py
+SOURCES_TESTS = \
+	test/test_ringbuffers.py
 
 # Extras for the build and packaging system
 SOURCES_EXTRA = \
-	README.rst \
+	README.org \
 	LICENSE \
 	HISTORY
 SOURCES_GENERATED = \
 	TAGS
+
+# Data collection and analysis
+TZ = Europe/London
+HOME_ASSISTANT_NAME = homeassistant
+HOME_ASSISTANT_IMAGE = ghcr.io/home-assistant/home-assistant:stable
+HOME_ASSISTANT_CONFIG_DIR = ./home-assistant
+HOME_ASSISTANT_DOCKER_OPTIONS = \
+	--name $(HOME_ASSISTANT_NAME) \
+	--privileged \
+	--restart=unless-stopped \
+	-e TZ=$(TZ) \
+	-v $(HOME_ASSISTANT_CONFIG_DIR):/config \
+	--network=host
 
 
 # ----- Tools -----
@@ -43,6 +64,8 @@ SOURCES_GENERATED = \
 # Base commands
 PYTHON = python3
 PIP = pip
+TOX = tox
+COVERAGE = coverage
 TWINE = twine
 FLAKE8 = flake8
 MYPY = mypy
@@ -57,7 +80,9 @@ SED = sed
 RM = rm -fr
 CP = cp
 CHDIR = cd
+MKDIR = mkdir -p
 ZIP = zip -r
+DOCKER = docker
 
 # Makefile environment
 SHELL := bash
@@ -80,12 +105,24 @@ VENV = venv3
 REQUIREMENTS = requirements.txt
 DEV_REQUIREMENTS = dev-requirements.txt
 
+# Constructed commands
+RUN_TESTS = $(TOX)
+RUN_COVERAGE = $(COVERAGE) erase && $(COVERAGE) run -a setup.py test && $(COVERAGE) report -m --include '$(PACKAGENAME)*'
+
 
 # ----- Top-level targets -----
 
 # Default prints a help message
 help:
 	@make usage
+
+# Run tests for all versions of Python we're interested in
+test: env Makefile
+	$(ACTIVATE) && $(RUN_TESTS)
+
+# Run coverage checks over the test suite
+coverage: env
+	$(ACTIVATE) && $(RUN_COVERAGE)
 
 # Run lint checks
 lint: env
@@ -99,6 +136,12 @@ $(VENV):
 	$(VIRTUALENV) $(VENV)
 	$(CAT) $(REQUIREMENTS) $(DEV_REQUIREMENTS) >$(VENV)/requirements.txt
 	$(ACTIVATE) && $(PIP) install -U pip wheel && $(CHDIR) $(VENV) && $(PIP) install -r requirements.txt
+
+# Deploy the Home Assistant container daemon
+server:
+	$(MKDIR) $(HOME_ASSISTANT_CONFIG_DIR)
+	$(DOCKER) run -d $(HOME_ASSISTANT_DOCKER_OPTIONS) $(HOME_ASSISTANT_IMAGE)
+	@echo "Home Assistant sitting on http://localhost:8123"
 
 # Clean generated files
 clean:
@@ -121,6 +164,8 @@ TAGS:
 define HELP_MESSAGE
 Available targets:
    make env          create a development virtual environment
+   make server       deploy a Home Assistant server locally
+   make clean        clean up the build
    make reallyclean  clean up the virtualenv as well
 
 endef
