@@ -36,6 +36,15 @@ SOURCES_TESTS_INIT = \
 	test/__init__.py
 SOURCES_TESTS = \
 	test/test_ringbuffers.py
+SOURCES_CHECKS = \
+	checks/dht22/code.py \
+	checks/anemometer/code.py \
+	checks/wind-direction/code.py \
+
+# Library modules needed on the microcontroller
+LIBRARIES = \
+	adafruit_dht.mpy \
+	adafruit_mcp3xxx
 
 # Extras for the build and packaging system
 SOURCES_EXTRA = \
