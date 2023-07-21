@@ -1,0 +1,46 @@
+* whether: A modular weather station and sensor suite for CircuitPython
+
+  #+begin_verse
+  Whether the weather be cold,
+  Or whether the weather be hot:
+  Whatever the weather
+  We'll weather the weather,
+  Whether we like it or not.
+
+  Anonymous
+  #+end_verse
+
+  ~whether~ is the software part of a DIY weather station built using
+  [[https://circuitpython.org/][CircuitPython]] on a [[https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html][Raspberry Pi Pico W]] single-board computer.
+
+  The core of ~whether~ is a sensor framework that models sensors as
+  objects that operate autonomously using coroutines. This separates
+  the different concerns of the sensor system: driving the hardware,
+  aggregating data into meaningful events, and reporting these events
+  to a data sink, which might be a local hub such as [[https://www.home-assistant.io/][Home Assistant]] or
+  a remote service such as [[https://www.wunderground.com/][Weather Underground]] or [[https://openweathermap.org/][OpenWeatherMap]].
+
+  There's nothing really weather-specific about ~whether~, other than
+  the choice of concrete sensors that it implements -- and it can
+  easily be extended with others. Whether you use it for weather is up
+  to you.
+
+** Repo structure
+
+   The repo is structured around several sub-directories:
+
+   - ~whether/~ :: the library code itself
+   - ~test/~ :: test suite for the library
+   - ~checks/~ :: small CircuitPython programs to check that components
+     are wired-up properly
+   - ~schematics/~ :: schematics for the hardware side of ~whether~
+
+** Current state
+
+   ~whether~ isn't yet in a usable form. Please come back later.
+
+** Copyright
+
+   Copyright (c) 2023, [[mailto:simoninireland@gmaiul.com][Simon Dobson]].
+
+   Licensed under the [[https://www.gnu.org/licenses/gpl-3.0.en.html][GNU General Public License v3.0]].
