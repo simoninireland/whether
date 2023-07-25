@@ -1,3 +1,5 @@
+# Sensor driver for the DHT22 temperature/humidity sensor
+#
 # Copyright (C) 2023 Simon Dobson
 #
 # This file is part of whether, a modular IoT weather station
@@ -15,17 +17,24 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
-# Logging
-import adafruit_logging as logging
-logger = logging.getLogger("whether")
+import asyncio
+from whether import Sampler
+import adafruit_dht
 
 
-# Utilities
-from .ringbuffer import RingBuffer
+class DHT22(Sampler):
 
-# Sensor types
-from .sensortypes import Sampler, Counter
+    TEMPERATURE = "temp"
+    HUMIDITY = "hum"
 
-# Sensor drivers
-from .DHT22 import DHT22
-from .anemometer import Anemometer
+    def __init__(self, id, pin, ring, period = 1):
+        super().__init__(id, ring, period)
+        self._pin = pin
+        self._dht = adafruit_dht.DHT22(pin)
+
+    def sample(self):
+        '''Take a sample from the sensor.
+
+        :returns: a dict'''
+        return {self.TEMPERATURE: self._dht.temperatiure,
+                self.HUMIDITY: self._dht.humidity}
