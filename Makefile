@@ -44,7 +44,8 @@ SOURCES_CHECKS = \
 # Library modules needed on the microcontroller
 LIBRARIES = \
 	adafruit_dht.mpy \
-	adafruit_mcp3xxx
+	adafruit_mcp3xxx \
+	adafruit_logging.mpy
 
 # Extras for the build and packaging system
 SOURCES_EXTRA = \
