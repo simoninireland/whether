@@ -43,6 +43,19 @@ class RingBufferTest(unittest.TestCase):
         self.assertEqual(ring.pop(), 10)
         self.assertEqual(len(ring), 0)
 
+    def testPeekEmpty(self):
+        '''Test we can't peek into an empty buffer.'''
+        ring = RingBuffer(10)
+        self.assertIsNone(ring.peek())
+
+    def testPushPeek(self):
+        '''Test we can peek what we push.'''
+        ring = RingBuffer(10)
+        ring.push(10)
+        self.assertEqual(len(ring), 1)
+        self.assertEqual(ring.peek(), 10)
+        self.assertEqual(len(ring), 1)
+
     def testPushNotEmpty(self):
         '''Test a ring with an element isn't empty.'''
         ring = RingBuffer(10)

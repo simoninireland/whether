@@ -78,13 +78,23 @@ class RingBuffer:
 
     def pop(self):
         '''Pop a value from the buffer. The value returned will be
-        the oldest value pushed.
+        the oldest value pushed. Return None if the buffer is empty.
 
         :returns: the next value'''
         if self.empty():
             return None
         v = self._buf[self._read]
         self._read = (self._read + 1) % self._len
+        return v
+
+    def peek(self):
+        '''Return the front of the buffer without popping it.
+        Return None if the buffer is empty.
+
+        :returns: the next value'''
+        if self.empty():
+            return None
+        v = self._buf[self._read]
         return v
 
 
