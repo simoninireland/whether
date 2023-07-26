@@ -25,15 +25,18 @@ from whether import RingBuffer, logger, DHT22, Anemometer
 # Set the logger
 logger.setLevel(logging.DEBUG)
 
-# Create the ring buffers1
-thbuf = RingBuffer(100)
-wsbuf = RingBuffer(100)
+async def main():
+    # Create the ring buffers
+    thbuf = RingBuffer(100)
+    wsbuf = RingBuffer(100)
 
-# Create the sensors
-th = DHT22('temperature-humidity', board.GP10, thbuf, 2)
-ws = Anemometer('windspeed', board.GP17, wsbuf, 2)
+    # Create the sensors
+    th = DHT22('temperature-humidity', board.D4, thbuf, 2)
+    ws = Anemometer('windspeed', board.D17, wsbuf, 2)
 
-# Start the coroutines
-with asyncio.TaskGroup() as tg:
-    tg.create_task(th.run)
-    tg.create_task(ws.run)
+    # Start the coroutines
+    tht = asyncio.create_task(th.run())
+    wst = asyncio.create_task(ws.run())
+    await asyncio.gather(tht, wst)
+
+asyncio.run(main())
