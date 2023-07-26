@@ -19,7 +19,6 @@
 import adafruit_logging as logging
 logger = logging.getLogger("whether")
 
-
 # Utilities
 from .ringbuffer import RingBuffer
 
@@ -29,3 +28,4 @@ from .sensortypes import Sampler, Counter
 # Sensor drivers
 from .DHT22 import DHT22
 from .anemometer import Anemometer
+from .winddirection import WindDirection

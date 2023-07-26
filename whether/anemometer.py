@@ -21,19 +21,19 @@ from whether import Counter
 
 
 class Anemometer(Counter):
-    '''A reed switcxh anemometer. Each tick of the switch corresponds
+    '''A reed switch anemometer. Each tick of the switch corresponds
     to a single rotation of the gauge.
 
     :param id: the sensor's id
-    :param ring: the ring buffer to receive events
     :param pin: the GPIO pin of the reed switch
+    :param ring: the ring buffer to receive events
     :param spr: the speed indicated by 1 rotation/second
     :param period: the reporting period'''
 
     WINDSPEED = "windspeed"       #: Event tag for windspeed in km/h
 
-    def __init__(self, id, ring, pin, spr, period = 1):
-        super().__init__(id, ring, pin, period)
+    def __init__(self, id, pin, ring, spr, period = 1):
+        super().__init__(id, pin, ring, period)
         self._speedPerRotation = spr
 
     def speed(self, n, dt):
@@ -49,4 +49,4 @@ class Anemometer(Counter):
         :returns: a dict'''
         c = self.count()
         s = c / self.period()
-        return = {self.WINDSPEED: s}
+        return {self.WINDSPEED: s}

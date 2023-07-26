@@ -18,7 +18,7 @@
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
 import asyncio
-from whether import Sampler
+from whether import Sampler, logger
 import adafruit_dht
 
 
@@ -36,5 +36,9 @@ class DHT22(Sampler):
         '''Take a sample from the sensor.
 
         :returns: a dict'''
-        return {self.TEMPERATURE: self._dht.temperatiure,
-                self.HUMIDITY: self._dht.humidity}
+        try:
+            return {self.TEMPERATURE: self._dht.temperature,
+                    self.HUMIDITY: self._dht.humidity}
+        except RuntimeError as err:
+            logger.error(err)
+            return None
