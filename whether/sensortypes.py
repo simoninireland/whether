@@ -19,6 +19,7 @@
 
 import time
 import asyncio
+import keypad
 from whether import logger
 
 
@@ -103,13 +104,14 @@ class Sampler(Sensor):
         while True:
             # construct the event
             ev = self.sample()
-            ev[self.TIMESTAMP] = time.time()
-            ev[self.ID] = self.id()
+            if ev is not None:
+                ev[self.TIMESTAMP] = time.time()
+                ev[self.ID] = self.id()
 
-            # push into the sensor's ring buffer
-            self.pushEvent(ev)
-            logger.debug('Sensor {id} pushed sample {ev}'.format(id=self.id().
-                                                                 ev=ev))
+                # push into the sensor's ring buffer
+                self.pushEvent(ev)
+                logger.debug('Sensor {id} pushed sample {ev}'.format(id=self.id(),
+                                                                     ev=ev))
 
             # wait for the next period
             await asyncio.sleep(self.period())
@@ -122,8 +124,8 @@ class Counter(Sensor):
     sees one it calls its :meth:`edge` to record the event.
 
     :param id: sensor identifier
-    :param ring: the ring buffer
     :poram pin: the GPIO pin to monitor
+    :param ring: the ring buffer
     :param period: the reporting period (defaults to 1s)
     :param rising: count rising or falling edges (defaults to True)
     :param polling: the polling period (defaults to 10ms)
@@ -132,7 +134,7 @@ class Counter(Sensor):
     COUNT = "count"     #: Event tag for the count.
 
 
-    def __init__(self, id, ring, pin,
+    def __init__(self, id, pin, ring,
                  period = 1,
                  rising = True, polling = 0.01):
         super().__init__(id, ring, period)
@@ -140,8 +142,10 @@ class Counter(Sensor):
         self._rising = rising
         self._polling = polling
 
+        # debouncing
+        self._key = keypad.Keys([pin], value_when_pressed=rising, pull=False)
+
         # counter state
-        self._state = pin.value   # initial pin value
         self._count = 0           # initial count
 
     def count(self):
@@ -159,12 +163,10 @@ class Counter(Sensor):
         self._count += 1
 
     def sample(self):
-        '''Create an event corresponding to the count. The count
-        is resent ready for the next period.
+        '''Create an event corresponding to the count.
 
         :returns: a dict'''
         ev = {self.COUNT: self.count()}
-        self.reset()
         return ev
 
 
@@ -173,12 +175,10 @@ class Counter(Sensor):
     async def polling(self):
         '''Coroutine to run the sensor's counting loop.'''
         while True:
-            trigger = self._pin.value
-            if self._state != trigger:
-                if trigger == self._rising:
-                    # detected an edge of the right sense
-                    self.edge()
-                self._state = trigger
+            event = self._key.events.get()
+            if event and event.pressed:
+                # detected an edge of the right sense
+                self.edge()
 
             await asyncio.sleep(self._polling)
 
@@ -190,15 +190,20 @@ class Counter(Sensor):
 
             # post the event
             ev = self.sample()
-            ev[self.TIMESTAMP] = time.time()
-            ev[self.ID] = self.id()
+            if ev is not None:
+                ev[self.TIMESTAMP] = time.time()
+                ev[self.ID] = self.id()
 
-            # push into the sensor's ring buffer
-            self.pushEvent(ev)
-            logger.debug('Sensor {id} pushed count {ev}'.format(id=self.id().
-                                                                ev=ev))
+                # push into the sensor's ring buffer
+                self.pushEvent(ev)
+                logger.debug('Sensor {id} pushed count {ev}'.format(id=self.id(),
+                                                                    ev=ev))
+            # reset the counter
+            self.reset()
+
 
     async def run(self):
         '''Coroutine to start the sampling and reporting coroutines.'''
-        asyncio.create_task(self.polling)
-        asyncio.create_task(self.reporting)
+        pt = asyncio.create_task(self.polling())
+        rt = asyncio.create_task(self.reporting())
+        await asyncio.gather(pt, rt)
