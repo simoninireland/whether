@@ -28,7 +28,8 @@ import board
 import keypad
 
 # GPIO10 for the magnetic reed switch
-key = keypad.Keys([board.GP17], value_when_pressed=True, pull=False)
+#key = keypad.Keys([board.GP17], value_when_pressed=True, pull=False)
+key = keypad.Keys([board.D17], value_when_pressed=True, pull=False)
 
 count = 0
 while True:

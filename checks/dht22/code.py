@@ -25,7 +25,8 @@ import board
 import adafruit_dht
 
 # GPIO10 for the I2C input
-dht = adafruit_dht.DHT22(board.GP10)
+#dht = adafruit_dht.DHT22(board.GP10)
+dht = adafruit_dht.DHT22(board.D4)
 
 while True:
     try:

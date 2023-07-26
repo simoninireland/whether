@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
+# Makes use of example code from Adafruit, see
+# https://docs.circuitpython.org/projects/mcp3xxx/en/latest/index.html
+
 import time
 import board
 import busio
@@ -25,8 +28,10 @@ import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 
 # A2D input is on SPI0
-spi = busio.SPI(clock=board.GP2, MISO=board.GP4, MOSI=board.GP3)
-cs = digitalio.DigitalInOut(board.GP5)
+#spi = busio.SPI(clock=board.GP2, MISO=board.GP4, MOSI=board.GP3)
+#cs = digitalio.DigitalInOut(board.GP5)
+spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
+cs = digitalio.DigitalInOut(board.D5)
 
 # create the MCP3008
 mcp = MCP.MCP3008(spi, cs)
