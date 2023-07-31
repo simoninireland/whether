@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
+from whether import logger
+
+
 class RingBuffer:
     '''Ring buffers.
 
@@ -52,14 +55,14 @@ class RingBuffer:
         return (self._write - self._read) % self._len
 
     def empty(self):
-        '''Test if the buffer is empty. Reading from an
+        '''Test if the buffer is empty. Popping from an
         empty buffer will return None.
 
         :returns: True if the buffer is empty'''
         return (self._read == self._write)
 
     def full(self):
-        '''Test is the buffer is full. Writing to a full buffer will
+        '''Test is the buffer is full. Pushing to a full buffer will
         overwrite the oldest element.
 
         :returns: True if the buffer is full'''
@@ -68,12 +71,18 @@ class RingBuffer:
     def push(self, v):
         '''Push a value to the buffer.
 
+        This operationm will result in data loss if the ring is full: the
+        oldest element will be dropped. This is logged as an info-level
+        event: *not* as an error, since this behaviour is part of the
+        purpose of using ring buffers in the first place.
+
         :param v: the value to push'''
         self._buf[self._write] = v
         self._write = (self._write + 1) % self._len
         if self._read == self._write:
             # the buffer is full, so drop the oldest element
             # so that the next read will read the next oldest
+            logger.info("Dropped item {v} from ring buffer".format(v=self._buf[self._write]))
             self._read = (self._read + 1) % self._len
 
     def pop(self):
@@ -101,7 +110,8 @@ class RingBuffer:
     # ---------- Iterator interface ----------
 
     def __iter__(self):
-        '''Return an iterator over this ring.
+        '''Return a destructive iterator over this ring. Iterating
+        will :meth:`pop` elements off until none are left.
 
         :returns: an iterator'''
         return self
