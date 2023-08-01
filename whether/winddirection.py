@@ -27,14 +27,16 @@ from whether import Sampler
 
 
 class WindDirection(Sampler):
-    '''A resistor network wind direction sensor. The sensor is connected
-    to an analogue-to-digital converter through the SPI interface.
+    '''Driver for a resistor network wind direction sensor. The
+    sensor is connected to an analogue-to-digital converter through
+    the SPI interface.
 
     :param id: the sensor's id
     :param cs: the chip select pin for the SPI device
     :param ch: the a2d channel for the resistor network
     :param ring: the ring buffer to receive events
-    :param period: the reporting period'''
+    :param period: the reporting period
+    '''
 
     DIRECTION = "dir"
     RAW = "raw_adc"

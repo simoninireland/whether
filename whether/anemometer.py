@@ -21,14 +21,15 @@ from whether import Counter
 
 
 class Anemometer(Counter):
-    '''A reed switch anemometer. Each tick of the switch corresponds
-    to a single rotation of the gauge.
+    '''Driver for a reed switch anemometer. Each tick of the switch
+    corresponds to a single rotation of the gauge.
 
     :param id: the sensor's id
     :param pin: the GPIO pin of the reed switch
     :param ring: the ring buffer to receive events
     :param spr: the speed indicated by 1 rotation/second
-    :param period: the reporting period'''
+    :param period: the reporting period
+    '''
 
     WINDSPEED = "windspeed"       #: Event tag for windspeed in km/h
     SPEEDDPERROTATION = 2.4       #: Windspeed in km/h indicvated by one rotation/second
