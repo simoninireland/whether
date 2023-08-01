@@ -23,9 +23,16 @@ import adafruit_dht
 
 
 class DHT22(Sampler):
+    '''Driver for a DHT22 temperature and humidity sensor.
 
-    TEMPERATURE = "temp"
-    HUMIDITY = "hum"
+    :param id: sensor identifier
+    :param pin: the data pin
+    :param ring: the ring buffer
+    :param period: the sampling perdiod in seconds
+    '''
+
+    TEMPERATURE = "temp"   #: Event tag fopr temperature in degrees Celsius.
+    HUMIDITY = "hum"       #: Event tage for relative humidity in percent.
 
     def __init__(self, id, pin, ring, period = 1):
         super().__init__(id, ring, period)
