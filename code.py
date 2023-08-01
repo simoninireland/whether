@@ -19,24 +19,35 @@
 
 import asyncio
 import board
+import adafruit_mcp3xxx.mcp3008 as MCP
 import adafruit_logging as logging
-from whether import RingBuffer, logger, DHT22, Anemometer
+from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection
+
+# Pin settings for Raspberry Pi
+TempHumPin = board.D4    # DHT22
+WindPin = board.D17      # Anemometer reed switch
+WindDirPin = board.D5    # Wind direction resistor network (also SPI0)
+WindDirChannel = MCP.P0  # Wind direction channel
+RainPin = board.D27      # Rain gauge reed switch
 
 # Set the logger
 logger.setLevel(logging.DEBUG)
 
 async def main():
-    # Create the ring buffers
+    # Create the sensor ring buffers
     thbuf = RingBuffer(100)
     wsbuf = RingBuffer(100)
+    wdbuf = RingBuffer(100)
 
     # Create the sensors
-    th = DHT22('temperature-humidity', board.D4, thbuf, 2)
-    ws = Anemometer('windspeed', board.D17, wsbuf, 2)
+    th = DHT22('temperature-humidity', TempHumPin, thbuf, 2)
+    ws = Anemometer('windspeed', WindPin, wsbuf, 2)
+    wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, wdbuf, 2)
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())
     wst = asyncio.create_task(ws.run())
-    await asyncio.gather(tht, wst)
+    wdt = asyncio.create_task(wd.run())
+    await asyncio.gather(tht, wst, wdt)
 
 asyncio.run(main())
