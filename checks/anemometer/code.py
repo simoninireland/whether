@@ -26,14 +26,34 @@
 import time
 import board
 import keypad
+import digitalio
 
 # GPIO10 for the magnetic reed switch
 #key = keypad.Keys([board.GP17], value_when_pressed=True, pull=False)
-key = keypad.Keys([board.D17], value_when_pressed=True, pull=False)
+# key = keypad.Keys([board.D17], value_when_pressed=True, pull=False)
+
+# count = 0
+# while True:
+#     event = key.events.get()
+#     if event and event.pressed:
+#         count += 1
+#         print(f"interrupted! ({count})")
+#     time.sleep(1)
+
+reed = digitalio.DigitalInOut(board.D17)
+reed.direction = digitalio.Direction.INPUT
 
 count = 0
+state = reed.value
+print(state)
 while True:
-    event = key.events.get()
-    if event and event.pressed:
+    trigger = reed.value
+    print(trigger)
+    if (not state) and trigger:
+        state = True
         count += 1
         print(f"interrupted! ({count})")
+    elif state and (not trigger):
+        state = False
+        print("Drop")
+    time.sleep(0.1)
