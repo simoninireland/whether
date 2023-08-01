@@ -102,16 +102,20 @@ class Sampler(Sensor):
         '''Coroutine to take a sample every period and place
         the data into the sensor's ring buffer.'''
         while True:
-            # construct the event
-            ev = self.sample()
-            if ev is not None:
-                ev[self.TIMESTAMP] = time.time()
-                ev[self.ID] = self.id()
+            try:
+                # construct the event
+                ev = self.sample()
+                if ev is not None:
+                    ev[self.TIMESTAMP] = time.time()
+                    ev[self.ID] = self.id()
 
-                # push into the sensor's ring buffer
-                self.pushEvent(ev)
-                logger.debug('Sensor {id} pushed sample {ev}'.format(id=self.id(),
-                                                                     ev=ev))
+                    # push into the sensor's ring buffer
+                    self.pushEvent(ev)
+                    logger.debug('Sensor {id} pushed sample {ev}'.format(id=self.id(),
+                                                                         ev=ev))
+            except Exception as err:
+                logger.error("{id}: {e}".format(id=self.id(),
+                                                e=err))
 
             # wait for the next period
             await asyncio.sleep(self.period())
@@ -188,19 +192,23 @@ class Counter(Sensor):
             # wait for the next sampling period
             await asyncio.sleep(self.period())
 
-            # post the event
-            ev = self.sample()
-            if ev is not None:
-                ev[self.TIMESTAMP] = time.time()
-                ev[self.ID] = self.id()
+            try:
+                # post the event
+                ev = self.sample()
+                if ev is not None:
+                    ev[self.TIMESTAMP] = time.time()
+                    ev[self.ID] = self.id()
 
-                # push into the sensor's ring buffer
-                self.pushEvent(ev)
-                logger.debug('Sensor {id} pushed count {ev}'.format(id=self.id(),
+                    # push into the sensor's ring buffer
+                    self.pushEvent(ev)
+                    logger.debug('Sensor {id} pushed count {ev}'.format(id=self.id(),
                                                                     ev=ev))
+            except Exception as err:
+                logger.error("{id}: {e}".format(id=self.id(),
+                                                e=err))
+
             # reset the counter
             self.reset()
-
 
     async def run(self):
         '''Coroutine to start the sampling and reporting coroutines.'''
