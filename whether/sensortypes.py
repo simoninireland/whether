@@ -128,7 +128,7 @@ class Counter(Sensor):
     :param ring: the ring buffer
     :param period: the reporting period (defaults to 1s)
     :param rising: count rising or falling edges (defaults to True)
-    :param polling: the polling period (defaults to 10ms)
+    :param polling: the polling period (d2efaults to 10ms)
     '''
 
     COUNT = "count"     #: Event tag for the count.
