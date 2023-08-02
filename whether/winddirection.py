@@ -23,7 +23,7 @@ import busio
 import digitalio
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
-from whether import Sampler, angleForDirection
+from whether import Sampler
 
 
 class WindDirection(Sampler):
@@ -44,8 +44,7 @@ class WindDirection(Sampler):
 
     '''
 
-    DIRECTION = "winddir"    #: Event tag for wind direction as a string'
-    ANGLE = "winddeg"        #: Event tag for wind direction in degrees.
+    DIRECTION = "winddir"    #: Event tag for wind direction as a string.
     RAW = "windrawadc"       #: Event tag for raw ADC value.
 
 
@@ -78,15 +77,13 @@ class WindDirection(Sampler):
             if (bestMatch is None) or (diff < bestMatch):
                 bestMatch, bestDirection = diff, d
 
-        # return the best direction and its angle
-        return (bestDirection, angleForDirection(bestDirection))
+        # return the best direction
+        return bestDirection
 
     def sample(self):
         '''Take a sample from the sensor.
 
         :returns: a dict'''
         r = self._channel.value
-        da = self.direction(r)
-        return {self.DIRECTION: da[0],
-                self.ANGLE: da[1],
+        return {self.DIRECTION: self.direction(r),
                 self.RAW: r}
