@@ -1,3 +1,5 @@
+# Utility functions
+#
 # Copyright (C) 2023 Simon Dobson
 #
 # This file is part of whether, a modular IoT weather station
@@ -15,18 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
-# Logging
-import adafruit_logging as logging
-logger = logging.getLogger("whether")
 
-# Utilities
-from .ringbuffer import RingBuffer
-from .utils import angleForDirection
+# Angle table for wind cardinal point directions
+windDirectionAngle = dict()
+a = 0
+for d in ["N", "NNE", "NE", "ENE",
+          "E", "ESE", "SE", "SSE",
+          "S", "SSW", "SW", "WSW",
+          "W", "WNW", "NW", "NNW"]:
+    windDirectionAngle[d] = a
+    a += 360 / 16
 
-# Sensor types
-from .sensortypes import Sampler, Counter
 
-# Sensor drivers
-from .DHT22 import DHT22
-from .anemometer import Anemometer
-from .winddirection import WindDirection
+def angleForDirection(d):
+    '''Return the angle corresponding to the given cardinal direction.
+
+    :param d: the cardinal point as a string
+    :returns: the angle'''
+    return windDirectionAngle[d]
