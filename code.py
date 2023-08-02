@@ -17,11 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
+from os import environ
 import asyncio
+from dotenv import load_dotenv
 import board
 import adafruit_mcp3xxx.mcp3008 as MCP
 import adafruit_logging as logging
-from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection
+from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection, HomeAssistant
+
+# Load calibration of the wind direction resistor network
 from winddirectioncalibration import windDirections
 
 # Pin settings for Raspberry Pi
@@ -34,6 +38,9 @@ RainPin = board.D27      # Rain gauge reed switch
 # Set the logger
 logger.setLevel(logging.DEBUG)
 
+# Load the credentials we need
+load_dotenv()
+
 async def main():
     # Create the sensor ring buffers
     thbuf = RingBuffer(100)
@@ -44,6 +51,13 @@ async def main():
     th = DHT22('temperature-humidity', TempHumPin, thbuf, 2)
     ws = Anemometer('windspeed', WindPin, wsbuf, 2)
     wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 2)
+
+    # Create the reporter
+    ha = HomeAssistant(environ["HOME_ASSISTANT_SERVER"], environ["HOME_ASSISTANT_TOKEN"],
+                       {HomeAssistant.TEMPERATURE: th,
+                        HomeAssistant.HUMIDITY: th,
+                        HomeAssistant.WINDSPEED: ws,
+                        HomeAssistant.WINDDIRECTION: wd})
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())
