@@ -31,8 +31,10 @@ class Anemometer(Counter):
     :param period: the reporting period
     '''
 
-    WINDSPEED = "windspeed"       #: Event tag for windspeed in km/h
-    SPEEDDPERROTATION = 2.4       #: Windspeed in km/h indicvated by one rotation/second
+    WINDSPEED = "windspeed"                 #: Event tag for windspeed in m/s.
+
+    # One rotation per second indicates a windpseed of 2.4km/h
+    SPEEDDPERROTATION = 2400 / (60 * 60)    #: Windspeed in m/s corresponding to one rotation/s.
 
     def __init__(self, id, pin, ring, period = 1):
         super().__init__(id, pin, ring, period)
