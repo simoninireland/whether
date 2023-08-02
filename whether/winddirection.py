@@ -23,19 +23,7 @@ import busio
 import digitalio
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
-from whether import Sampler
-from .winddirectioncalibration import windDirections
-
-
-# Compute the direction to angle table
-windDirectionAngle = dict()
-a = 0
-for d in ["N", "NNE", "NE", "ENE",
-          "E", "ESE", "SE", "SSE",
-          "S", "SSW", "SW", "WSW",
-          "W", "WNW", "NW", "NNW"]:
-    windDirectionAngle[d] = a
-    a += 360 / 16
+from whether import Sampler, angleForDirection
 
 
 class WindDirection(Sampler):
@@ -43,11 +31,17 @@ class WindDirection(Sampler):
     sensor is connected to an analogue-to-digital converter through
     the SPI interface.
 
+    The object takes a calibration table mapping cardinal points to
+    raw ADC values that is used to translate the sensor readings
+    into meaningful form.
+
     :param id: the sensor's id
     :param cs: the chip select pin for the SPI device
     :param ch: the a2d channel for the resistor network
+    :param cal: calibration table
     :param ring: the ring buffer to receive events
     :param period: the reporting period
+
     '''
 
     DIRECTION = "winddir"    #: Event tag for wind direction as a string'
@@ -55,8 +49,11 @@ class WindDirection(Sampler):
     RAW = "windrawadc"       #: Event tag for raw ADC value.
 
 
-    def __init__(self, id, cs, ch, ring, period = 1):
+    def __init__(self, id, cs, ch, cal, ring, period = 1):
         super().__init__(id, ring, period)
+
+        # calibration data
+        self._calibration = cal
 
         # SPI interface (assumed to be SPI0)
         self._spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -76,13 +73,13 @@ class WindDirection(Sampler):
 
         # extract the nearest matching raw value
         bestMatch, bestDirection = None, None
-        for (d, v) in windDirections.items():
+        for (d, v) in self._calibration.items():
             diff = abs(r - v)
             if (bestMatch is None) or (diff < bestMatch):
                 bestMatch, bestDirection = diff, d
 
         # return the best direction and its angle
-        return (bestDirection, windDirectionAngle[bestDirection])
+        return (bestDirection, angleForDirection(bestDirection))
 
     def sample(self):
         '''Take a sample from the sensor.

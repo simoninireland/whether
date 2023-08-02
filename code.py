@@ -22,6 +22,7 @@ import board
 import adafruit_mcp3xxx.mcp3008 as MCP
 import adafruit_logging as logging
 from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection
+from winddirectioncalibration import windDirections
 
 # Pin settings for Raspberry Pi
 TempHumPin = board.D4    # DHT22
@@ -42,7 +43,7 @@ async def main():
     # Create the sensors
     th = DHT22('temperature-humidity', TempHumPin, thbuf, 2)
     ws = Anemometer('windspeed', WindPin, wsbuf, 2)
-    wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, wdbuf, 2)
+    wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 2)
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())

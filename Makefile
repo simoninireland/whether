@@ -56,7 +56,7 @@ SOURCES_EXTRA = \
 	LICENSE \
 	HISTORY
 SOURCES_GENERATED = \
-	whether/winddirectioncalibration.py \
+	winddirectioncalibration.py \
 	TAGS
 
 # Data collection and analysis
@@ -176,7 +176,7 @@ TAGS:
 	$(ETAGS) -o TAGS $(SOURCES_CODE)
 
 # The wind direction calibration file
-whether/winddirectioncalibration.py:
+winddirectioncalibration.py:
 	$(ACTIVATE) && $(PYTHON) scripts/calibrate-direction.py
 
 
