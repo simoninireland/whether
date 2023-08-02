@@ -21,7 +21,7 @@ logger = logging.getLogger("whether")
 
 # Utilities
 from .ringbuffer import RingBuffer
-from .utils import angleForDirection
+from .utils import angleForDirection, modalTagValue, meanTagValue
 
 # Sensor types
 from .sensortypes import Sampler, Counter
@@ -30,3 +30,6 @@ from .sensortypes import Sampler, Counter
 from .DHT22 import DHT22
 from .anemometer import Anemometer
 from .winddirection import WindDirection
+
+# Reporters
+from .homeassistant import HomeAssistant

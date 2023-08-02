@@ -35,3 +35,41 @@ def angleForDirection(d):
     :param d: the cardinal point as a string
     :returns: the angle'''
     return windDirectionAngle[d]
+
+
+def modalTagValue(self, tag, evs):
+    '''Compute the modal value associated with the given tag,
+    which really needs to be discrete to make sense.
+
+    :param tag: the event tag
+    :param evs: the events
+    :returns: the modal value'''
+    values = dict()
+    modalCount, modalValue = None, None
+    for ev in evs:
+        v = ev[tag]
+        if v not in values:
+            values[v] = 1
+        else:
+            values[v] += 1
+
+        # update the mode if needed
+        if (modalCount is None) or (values[v] > modalCount):
+            modalCount = values[v]
+            modalValue = v
+
+    return modalValue
+
+
+def meanTagValue(self, tag, evs):
+    '''Compute the mean value associated with the given tag, which
+    needs to be numeric to make sense.
+
+    :param tag: the event tag
+    :param evs: the events
+    :returns: the mean value'''
+    v, n = 0.0, 0
+    for ev in evs:
+        v += ev[tag]
+        n += 1
+    return  v / n
