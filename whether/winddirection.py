@@ -24,6 +24,18 @@ import digitalio
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 from whether import Sampler
+from .winddirectioncalibration import windDirections
+
+
+# Compute the direction to angle table
+windDirectionAngle = dict()
+a = 0
+for d in ["N", "NNE", "NE", "ENE",
+          "E", "ESE", "SE", "SSE",
+          "S", "SSW", "SW", "WSW",
+          "W", "WNW", "NW", "NNW"]:
+    windDirectionAngle[d] = a
+    a += 360 / 16
 
 
 class WindDirection(Sampler):
@@ -38,8 +50,10 @@ class WindDirection(Sampler):
     :param period: the reporting period
     '''
 
-    DIRECTION = "dir"
-    RAW = "raw_adc"
+    DIRECTION = "winddir"    #: Event tag for wind direction as a string'
+    ANGLE = "winddeg"        #: Event tag for wind direction in degrees.
+    RAW = "windrawadc"       #: Event tag for raw ADC value.
+
 
     def __init__(self, id, cs, ch, ring, period = 1):
         super().__init__(id, ring, period)
@@ -58,13 +72,24 @@ class WindDirection(Sampler):
         '''Return the wind direction.
 
         :param r: the raw wind direction reading
-        :returns: a direction string'''
-        return "N"
+        :returns: a pair of a direction string and a rotation in degrees'''
+
+        # extract the nearest matching raw value
+        bestMatch, bestDirection = None, None
+        for (d, v) in windDirections.items():
+            diff = abs(r - v)
+            if (bestMatch is None) or (diff < bestMatch):
+                bestMatch, bestDirection = diff, d
+
+        # return the best direction and its angle
+        return (bestDirection, windDirectionAngle[bestDirection])
 
     def sample(self):
         '''Take a sample from the sensor.
 
         :returns: a dict'''
         r = self._channel.value
-        return {self.DIRECTION: self.direction(r),
+        da = self.direction(r)
+        return {self.DIRECTION: da[0],
+                self.ANGLE: da[1],
                 self.RAW: r}
