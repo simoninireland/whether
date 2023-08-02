@@ -14,7 +14,7 @@ mcp = MCP.MCP3008(spi, cs)
 
 channel = AnalogIn(mcp, MCP.P0)
 
-fn = "windDirections.py"
+fn = "whether/winddirectioncalibration.py"
 sensitivity = 0.04
 directions = ["N", "NNE", "NE", "ENE",
               "E", "ESE", "SE", "SSE",

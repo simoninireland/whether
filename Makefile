@@ -31,7 +31,8 @@ SOURCES_CODE = \
 	whether/ringbuffer.py \
 	whether/sensortypes.py \
 	whether/DHT22.py \
-	whether/anemometer.py
+	whether/anemometer.py \
+	winddirection.py
 SOURCES_TESTS_INIT = \
 	test/__init__.py
 SOURCES_TESTS = \
@@ -40,6 +41,8 @@ SOURCES_CHECKS = \
 	checks/dht22/code.py \
 	checks/anemometer/code.py \
 	checks/wind-direction/code.py \
+SOURCES_MASTER = \
+	code.py
 
 # Library modules needed on the microcontroller
 LIBRARIES = \
@@ -53,6 +56,7 @@ SOURCES_EXTRA = \
 	LICENSE \
 	HISTORY
 SOURCES_GENERATED = \
+	whether/winddirectioncalibration.py \
 	TAGS
 
 # Data collection and analysis
@@ -147,6 +151,9 @@ $(VENV):
 	$(CAT) $(REQUIREMENTS) $(DEV_REQUIREMENTS) >$(VENV)/requirements.txt
 	$(ACTIVATE) && $(PIP) install -U pip wheel && $(CHDIR) $(VENV) && $(PIP) install -r requirements.txt
 
+# Perform sensor calibration
+calibrate: whether/winddirectioncalibration.py
+
 # Deploy the Home Assistant container daemon
 server:
 	$(MKDIR) $(HOME_ASSISTANT_CONFIG_DIR)
@@ -168,12 +175,17 @@ reallyclean: clean
 TAGS:
 	$(ETAGS) -o TAGS $(SOURCES_CODE)
 
+# The wind direction calibration file
+whether/winddirectioncalibration.py:
+	$(ACTIVATE) && $(PYTHON) scripts/calibrate-direction.py
+
 
 # ----- Usage -----
 
 define HELP_MESSAGE
 Available targets:
    make env          create a development virtual environment
+   make calibrate    perform sensor calibration
    make server       deploy a Home Assistant server locally
    make clean        clean up the build
    make reallyclean  clean up the virtualenv as well
