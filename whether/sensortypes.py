@@ -52,8 +52,9 @@ class Sensor:
         :returns: the sensor id'''
         return self._id
 
-    def ring(self):
-        '''Return the ring buffer the sensor reports to.
+    def events(self):
+        '''Return the ring buffer the sensor reports events to.
+        This can then be iteratred to retruiieve the outstanding events,
 
         :returns: the ring buffer'''
         return self._ring
@@ -75,7 +76,7 @@ class Sensor:
         '''Push an event to the sensor's ring buffer.
 
         :param ev: the event'''
-        self.ring().push(ev)
+        self._ring.push(ev)
 
 
     # ---------- Coroutine interface ----------
