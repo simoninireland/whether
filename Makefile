@@ -59,6 +59,15 @@ SOURCES_GENERATED = \
 	winddirectioncalibration.py \
 	TAGS
 
+# Message broker
+MQTT_NAME = mosquitto
+MQTT_IMAGE = docker.io/library/eclipse-mosquitto:latest
+MQTT_CONFIG = mosquitto.conf
+MQTT_DOCKER_OPTIONS = \
+	--name $(MQTT_NAME) \
+	-p 1883:1883 -p 9001:9001 \
+	-v $(MQTT_CONFIG):/mosquitto/config/mosquitto.conf
+
 # Data collection and analysis
 TZ = Europe/London
 HOME_ASSISTANT_NAME = homeassistant
@@ -154,11 +163,15 @@ $(VENV):
 # Perform sensor calibration
 calibrate: whether/winddirectioncalibration.py
 
-# Deploy the Home Assistant container daemon
+# Deploy the Home Assistant container
 server:
 	$(MKDIR) $(HOME_ASSISTANT_CONFIG_DIR)
 	$(DOCKER) run -d $(HOME_ASSISTANT_DOCKER_OPTIONS) $(HOME_ASSISTANT_IMAGE)
 	@echo "Home Assistant sitting on http://localhost:8123"
+
+# Deploy the MQTT broker container
+broker:
+	$(DOCKER) run -d $(MQTT_DOCKER_OPTIONS) $(MQTT_IMAGE)
 
 # Clean generated files
 clean:
