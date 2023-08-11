@@ -65,8 +65,7 @@ MQTT_IMAGE = docker.io/library/eclipse-mosquitto:latest
 MQTT_CONFIG = mosquitto.conf
 MQTT_DOCKER_OPTIONS = \
 	--name $(MQTT_NAME) \
-	-p 1883:1883 -p 9001:9001 \
-	-v $(MQTT_CONFIG):/mosquitto/config/mosquitto.conf
+	-p 1883:1883 -p 9001:9001
 
 # Data collection and analysis
 TZ = Europe/London
