@@ -1,6 +1,5 @@
 python-dotenv
-tb-mqtt-client
-requests
+paho-mqtt
 adafruit-blinka
 adafruit-circuitpython-lis3dh
 adafruit-circuitpython-dht
