@@ -53,16 +53,19 @@ async def main():
     wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 2)
 
     # Create the reporter
-    ha = HomeAssistant(environ["HOME_ASSISTANT_SERVER"], environ["HOME_ASSISTANT_TOKEN"],
+    ha = HomeAssistant(environ["MQTT_SERVER"], environ["MQTT_USERNAME"], environ["MQTT_PASSWORD"],
+                       "homeassistant/sensor/whether/state",
                        {HomeAssistant.TEMPERATURE: th,
                         HomeAssistant.HUMIDITY: th,
                         HomeAssistant.WINDSPEED: ws,
-                        HomeAssistant.WINDDIRECTION: wd})
+                        HomeAssistant.WINDDIRECTION: wd},
+                       period=5)
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())
     wst = asyncio.create_task(ws.run())
     wdt = asyncio.create_task(wd.run())
-    await asyncio.gather(tht, wst, wdt)
+    hat = asyncio.create_task(ha.run())
+    await asyncio.gather(tht, wst, wdt, hat)
 
 asyncio.run(main())
