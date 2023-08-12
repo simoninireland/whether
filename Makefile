@@ -29,9 +29,11 @@ SOURCES_CODE_INIT = \
 	whether/__init__.py
 SOURCES_CODE = \
 	whether/ringbuffer.py \
+	whether/utils.py \
 	whether/sensortypes.py \
 	whether/DHT22.py \
 	whether/anemometer.py \
+	whether/homeassistant.py \
 	winddirection.py
 SOURCES_TESTS_INIT = \
 	test/__init__.py
