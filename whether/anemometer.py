@@ -27,7 +27,6 @@ class Anemometer(Counter):
     :param id: the sensor's id
     :param pin: the GPIO pin of the reed switch
     :param ring: the ring buffer to receive events
-    :param spr: the speed indicated by 1 rotation/second
     :param period: the reporting period
     '''
 
@@ -43,7 +42,8 @@ class Anemometer(Counter):
         '''Return the windspeed indicated by n counts in the period dt.
 
         :param n: the number of counts
-        :param dt: the elapsed time'''
+        :param dt: the elapsed tim
+        :returns: the windspeed'''
         return (self.SPEEDPERROTATION * n) / dt
 
     def sample(self):
@@ -51,5 +51,5 @@ class Anemometer(Counter):
 
         :returns: a dict'''
         c = self.count()
-        s = c / self.period()
+        s = self.speed(c, self.period())
         return {self.WINDSPEED: s}
