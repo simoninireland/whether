@@ -32,7 +32,7 @@ class DHT22(Sampler):
     '''
 
     TEMPERATURE = "temp"   #: Event tag fopr temperature in degrees Celsius.
-    HUMIDITY = "hum"       #: Event tage for relative humidity in percent.
+    HUMIDITY = "hum"       #: Event tag for relative humidity in percent.
 
     def __init__(self, id, pin, ring, period = 1):
         super().__init__(id, ring, period)
