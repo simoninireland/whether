@@ -54,6 +54,11 @@ class RingBuffer:
         :returns: the length'''
         return (self._write - self._read) % self._len
 
+    def reset(self):
+        '''Reset the buffer.'''
+        self._write = 0
+        self._read = 0
+
     def empty(self):
         '''Test if the buffer is empty. Popping from an
         empty buffer will return None.
@@ -96,28 +101,49 @@ class RingBuffer:
         self._read = (self._read + 1) % self._len
         return v
 
-    def peek(self):
-        '''Return the front of the buffer without popping it.
+    def peek(self, i = 0):
+        '''Return the i'th element from the front of the buffer without popping it.
         Return None if the buffer is empty.
 
         :returns: the next value'''
-        if self.empty():
+        n = (self._read + i) % self._len
+        if n == self._write:
+            # buffer is empty
             return None
-        v = self._buf[self._read]
-        return v
+        else:
+            v = self._buf[n]
+            return v
 
 
     # ---------- Iterator interface ----------
 
+    class Iterator:
+        '''A non-destructive iterator over a ring buffer. Iterating
+        will :meth:`peek` at elements until all have been seen.
+
+        This is absolutely not safe against pops or pushes mid-iteration.
+
+        :param ring: the ring buffer
+        '''
+
+        def __init__(self, ring):
+            self._ring = ring
+            self._i = 0
+
+        def __next__(self):
+            '''Return the next value.
+
+            :returns: the next value'''
+            while True:
+                v = self._ring.peek(self._i)
+                if v is None:
+                    raise StopIteration
+                else:
+                    self._i += 1
+                    return v
+
     def __iter__(self):
-        '''Return a destructive iterator over this ring. Iterating
-        will :meth:`pop` elements off until none are left.
+        '''Return a non-destructive iterator over this ring.
 
         :returns: an iterator'''
-        return self
-
-    def __next__(self):
-        if not self.empty():
-            return self.pop()
-        else:
-            raise StopIteration
+        return RingBuffer.Iterator(self)
