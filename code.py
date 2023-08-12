@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 import board
 import adafruit_mcp3xxx.mcp3008 as MCP
 import adafruit_logging as logging
-from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection, HomeAssistant
+from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection, Raingauge, HomeAssistant
 
 # Load calibration of the wind direction resistor network
 from winddirectioncalibration import windDirections
@@ -46,11 +46,13 @@ async def main():
     thbuf = RingBuffer(100)
     wsbuf = RingBuffer(100)
     wdbuf = RingBuffer(100)
+    rgbuf = RingBuffer(100)
 
     # Create the sensors
-    th = DHT22('temperature-humidity', TempHumPin, thbuf, 2)
-    ws = Anemometer('windspeed', WindPin, wsbuf, 2)
-    wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 2)
+    th = DHT22('temperature-humidity', TempHumPin, thbuf, 1)
+    ws = Anemometer('windspeed', WindPin, wsbuf, 1)
+    wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 1)
+    rg = Raingauge('rainfall', RainPin, rgbuf, 1)
 
     # Create the reporter
     ha = HomeAssistant(environ["MQTT_SERVER"], environ["MQTT_USERNAME"], environ["MQTT_PASSWORD"],
@@ -58,14 +60,16 @@ async def main():
                        {HomeAssistant.TEMPERATURE: th,
                         HomeAssistant.HUMIDITY: th,
                         HomeAssistant.WINDSPEED: ws,
-                        HomeAssistant.WINDDIRECTION: wd},
+                        HomeAssistant.WINDDIRECTION: wd,
+                        HomeAssistant.RAININTENSITY: rg},
                        period=5)
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())
     wst = asyncio.create_task(ws.run())
     wdt = asyncio.create_task(wd.run())
+    rgt = asyncio.create_task(rg.run())
     hat = asyncio.create_task(ha.run())
-    await asyncio.gather(tht, wst, wdt, hat)
+    await asyncio.gather(tht, wst, wdt, rgt, hat)
 
 asyncio.run(main())

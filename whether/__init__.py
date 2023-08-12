@@ -30,6 +30,7 @@ from .sensortypes import Sampler, Counter
 from .DHT22 import DHT22
 from .anemometer import Anemometer
 from .winddirection import WindDirection
+from .raingauge import Raingauge
 
 # Reporters
 from .homeassistant import HomeAssistant

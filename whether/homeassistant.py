@@ -42,6 +42,7 @@ class HomeAssistant:
     HUMIDITY = "h"           #: Humidity sensor
     WINDSPEED = "ws"         #: Windspeed sensor.
     WINDDIRECTION = "wd"     #: Wind direction sensor.
+    RAININTENSITY = "r"      #: Rain gauge.
 
 
     def __init__(self, server, username, password, topic,
@@ -119,6 +120,16 @@ class HomeAssistant:
                                                  value_template="{{ value_json.wind_dir_deg }}",
                                                  state_topic=self._topic)))
 
+        if self.RAININTENSITY in self._sensors:
+            self._payload.append((self._sensors[self.RAININTENSITY], self.rainfall))
+            self._client.publish("homeassistant/sensor/rainfall/config",
+                                 json.dumps(dict(name="Rainfall",
+                                                 unique_id="whether-rainfall",
+                                                 device_class="precipitation_intensity",
+                                                 unit_of_measurement="mm/h",
+                                                 value_template="{{ value_json.rainfall }}",
+                                                 state_topic=self._topic)))
+
     def _mqttClient(self):
         '''Connect to the MQTT server.'''
         self._client = mqtt.Client()
@@ -148,6 +159,10 @@ class HomeAssistant:
         d = modalTagValue(wd.events(), wd.DIRECTION)
         payload['wind_dir'] = d
         payload['wind_dir_deg'] = angleForDirection(d)
+
+    def rainfall(self, rg, payload):
+        d = meanTagValue(rg.events(), rg.RAININTENSITY)
+        payload['rainfall'] = d
 
     def payload(self):
         '''Create the payload for the upload.
