@@ -21,7 +21,7 @@ logger = logging.getLogger("whether")
 
 # Utilities
 from .ringbuffer import RingBuffer
-from .utils import angleForDirection, modalTagValue, meanTagValue
+from .utils import angleForDirection, modalTagValue, meanTagValue, maxTagValue
 
 # Sensor types
 from .sensortypes import Sampler, Counter

@@ -37,12 +37,12 @@ def angleForDirection(d):
     return windDirectionAngle[d]
 
 
-def modalTagValue(self, tag, evs):
+def modalTagValue(evs, tag):
     '''Compute the modal value associated with the given tag,
     which really needs to be discrete to make sense.
 
-    :param tag: the event tag
     :param evs: the events
+    :param tag: the event tag
     :returns: the modal value'''
     values = dict()
     modalCount, modalValue = None, None
@@ -61,15 +61,30 @@ def modalTagValue(self, tag, evs):
     return modalValue
 
 
-def meanTagValue(self, tag, evs):
+def meanTagValue(evs, tag):
     '''Compute the mean value associated with the given tag, which
     needs to be numeric to make sense.
 
-    :param tag: the event tag
     :param evs: the events
+    :param tag: the event tag
     :returns: the mean value'''
     v, n = 0.0, 0
     for ev in evs:
         v += ev[tag]
         n += 1
-    return  v / n
+    if n == 0:
+        return 0
+    else:
+        return  v / n
+
+def maxTagValue(evs, tag):
+    '''Compute the maximum value associated with the given tag, which
+    needs to be numeric to make sense.
+
+    :param evs: the events
+    :param tag: the event tag
+    :returns: the maximum value'''
+    v = 0.0
+    for ev in evs:
+        v =max(v, ev[tag])
+    return  v
