@@ -36,11 +36,24 @@ WindDirPin = board.D5    # Wind direction resistor network (also SPI0)
 WindDirChannel = MCP.P0  # Wind direction channel
 RainPin = board.D27      # Rain gauge reed switch
 
-# Set the logger
-logger.setLevel(logging.DEBUG)
-
-# Load the credentials we need
+# Load the credentials and configuration information  we need
 load_dotenv()
+
+# Set the logger
+loglevel = environ.get('LOGLEVEL', None)
+if loglevel is not None:
+    # look up the log level
+    level = 0
+    if loglevel.isdigit():
+        level = loglevel
+    else:
+        # Adafruit's logging doesn't allow strings as levels
+        loglevel = loglevel.lower()
+        for (v, l) in logging.LEVELS:
+            if l.lower() == loglevel:
+                level = v
+                break
+    logger.setLevel(level)
 
 async def main():
     # Create the sensor ring buffers
