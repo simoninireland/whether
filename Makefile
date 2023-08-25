@@ -33,6 +33,9 @@ SOURCES_CODE = \
 	whether/sensortypes.py \
 	whether/DHT22.py \
 	whether/anemometer.py \
+	whether/winddirection.py \
+	whether/pijuice.py \
+	whether/rpi.py \
 	whether/homeassistant.py \
 	winddirection.py
 SOURCES_TESTS_INIT = \
@@ -126,6 +129,7 @@ ROOT = $(shell pwd)
 
 # Requirements for running the library and for the development venv needed to build it
 VENV = venv3
+VENV_OPTIONS = --system-site-packages
 REQUIREMENTS = requirements.txt
 DEV_REQUIREMENTS = dev-requirements.txt
 
@@ -157,7 +161,7 @@ lint: env
 env: $(VENV)
 
 $(VENV):
-	$(VIRTUALENV) $(VENV)
+	$(VIRTUALENV) $(VENV) $(VENV_OPTIONS)
 	$(CAT) $(REQUIREMENTS) $(DEV_REQUIREMENTS) >$(VENV)/requirements.txt
 	$(ACTIVATE) && $(PIP) install -U pip wheel && $(CHDIR) $(VENV) && $(PIP) install -r requirements.txt
 
