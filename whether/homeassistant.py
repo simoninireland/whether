@@ -221,7 +221,7 @@ class HomeAssistant:
 
         :param payload: the payload
         '''
-        logger.debug(f"MQTT submitting {payload}")
+        logger.info(f"MQTT submitting {payload}")
         self._client.publish(self._topic, json.dumps(payload))
 
     async def run(self):
