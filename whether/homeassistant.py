@@ -43,6 +43,8 @@ class HomeAssistant:
     WINDSPEED = "ws"         #: Windspeed sensor.
     WINDDIRECTION = "wd"     #: Wind direction sensor.
     RAININTENSITY = "r"      #: Rain gauge.
+    BATTERY = "b"            #: Battery.
+    CPU = 'c'                #: CPU.
 
 
     def __init__(self, server, username, password, topic,
@@ -129,12 +131,38 @@ class HomeAssistant:
                                                  unit_of_measurement="mm/h",
                                                  value_template="{{ value_json.rainfall }}",
                                                  state_topic=self._topic)))
+        if self.BATTERY in self._sensors:
+            self._payload.append((self._sensors[self.BATTERY], self.battery))
+            self._client.publish("homeassistant/sensor/battery/config",
+                                 json.dumps(dict(name="Battery",
+                                                 unique_id="whether-battery",
+                                                 device_class="battery",
+                                                 unit_of_measurement="%",
+                                                 value_template="{{ value_json.battery_charge }}",
+                                                 state_topic=self._topic)))
+            self._client.publish("homeassistant/sensor/batterytemp/config",
+                                 json.dumps(dict(name="Battery temperature",
+                                                 unique_id="whether-batterytemp",
+                                                 device_class="temperature",
+                                                 unit_of_measurement="C",
+                                                 value_template="{{ value_json.battery_temp }}",
+                                                 state_topic=self._topic)))
+
+        if self.CPU in self._sensors:
+            self._payload.append((self._sensors[self.CPU], self.cpu))
+            self._client.publish("homeassistant/sensor/cputemp/config",
+                                 json.dumps(dict(name="CPU temperature",
+                                                 unique_id="whether-cputemp",
+                                                 device_class="temperature",
+                                                 unit_of_measurement="C",
+                                                 value_template="{{ value_json.cpu_temp }}",
+                                                 state_topic=self._topic)))
 
     def _mqttClient(self):
         '''Connect to the MQTT server.'''
         self._client = mqtt.Client()
-        self._client.enable_logger(logger)
-        self._client.username_pw_set(self._username, self._password)
+        self._client.username_pw_set(username=self._username,
+                                     password=self._password)
         logger.debug(f"MQTT {self._server}, username {self._username}, password {self._password}")
         self._client.connect(self._server, port=1883)
 
@@ -163,6 +191,16 @@ class HomeAssistant:
     def rainfall(self, rg, payload):
         d = meanTagValue(rg.events(), rg.RAININTENSITY)
         payload['rainfall'] = d
+
+    def battery(self, rg, payload):
+        c = meanTagValue(rg.events(), rg.BATTERY_CHARGE_PERCENTAGE)
+        t = meanTagValue(rg.events(), rg.BATTERY_TEMPERATURE)
+        payload['battery_charge'] = c
+        payload['battery_temp'] = t
+
+    def cpu(self, rg, payload):
+        t = meanTagValue(rg.events(), rg.CPU_TEMPERATURE)
+        payload['cpu_temp'] = t
 
     def payload(self):
         '''Create the payload for the upload.

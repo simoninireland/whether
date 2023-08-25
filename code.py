@@ -21,9 +21,10 @@ from os import environ
 import asyncio
 from dotenv import load_dotenv
 import board
+
 import adafruit_mcp3xxx.mcp3008 as MCP
 import adafruit_logging as logging
-from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection, Raingauge, HomeAssistant
+from whether import RingBuffer, logger, DHT22, Anemometer, WindDirection, Raingauge, PiJuice, RPi, HomeAssistant
 
 # Load calibration of the wind direction resistor network
 from winddirectioncalibration import windDirections
@@ -47,12 +48,16 @@ async def main():
     wsbuf = RingBuffer(100)
     wdbuf = RingBuffer(100)
     rgbuf = RingBuffer(100)
+    pjbuf = RingBuffer(100)
+    rpbuf = RingBuffer(100)
 
     # Create the sensors
-    th = DHT22('temperature-humidity', TempHumPin, thbuf, 1)
+    th = DHT22('temperature-humidity', TempHumPin, thbuf, 10)
     ws = Anemometer('windspeed', WindPin, wsbuf, 1)
     wd = WindDirection('wind-direction', WindDirPin, WindDirChannel, windDirections, wdbuf, 1)
     rg = Raingauge('rainfall', RainPin, rgbuf, 1)
+    pj = PiJuice('pi-juice', pjbuf, 10)
+    rp = RPi('pi', rpbuf, 10)
 
     # Create the reporter
     ha = HomeAssistant(environ["MQTT_SERVER"], environ["MQTT_USERNAME"], environ["MQTT_PASSWORD"],
@@ -61,15 +66,19 @@ async def main():
                         HomeAssistant.HUMIDITY: th,
                         HomeAssistant.WINDSPEED: ws,
                         HomeAssistant.WINDDIRECTION: wd,
-                        HomeAssistant.RAININTENSITY: rg},
-                       period=5)
+                        HomeAssistant.RAININTENSITY: rg,
+                        HomeAssistant.BATTERY: pj,
+                        HomeAssistant.CPU: rp},
+                       period=30)
 
     # Start the coroutines
     tht = asyncio.create_task(th.run())
     wst = asyncio.create_task(ws.run())
     wdt = asyncio.create_task(wd.run())
     rgt = asyncio.create_task(rg.run())
+    pjt = asyncio.create_task(pj.run())
+    rpt = asyncio.create_task(rp.run())
     hat = asyncio.create_task(ha.run())
-    await asyncio.gather(tht, wst, wdt, rgt, hat)
+    await asyncio.gather(tht, wst, wdt, rgt, pjt, rpt, hat)
 
 asyncio.run(main())

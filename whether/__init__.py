@@ -31,6 +31,8 @@ from .DHT22 import DHT22
 from .anemometer import Anemometer
 from .winddirection import WindDirection
 from .raingauge import Raingauge
+from .pijuice import PiJuice
+from .rpi import RPi
 
 # Reporters
 from .homeassistant import HomeAssistant
