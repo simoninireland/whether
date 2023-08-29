@@ -147,6 +147,20 @@ class HomeAssistant:
                                                  unit_of_measurement="C",
                                                  value_template="{{ value_json.battery_temp }}",
                                                  state_topic=self._topic)))
+            self._client.publish("homeassistant/sensor/batteryvoltage/config",
+                                 json.dumps(dict(name="Battery voltage",
+                                                 unique_id="whether-batteryvoltage",
+                                                 device_class="voltage",
+                                                 unit_of_measurement="mV",
+                                                 value_template="{{ value_json.battery_voltage }}",
+                                                 state_topic=self._topic)))
+            self._client.publish("homeassistant/sensor/batterycurrent/config",
+                                 json.dumps(dict(name="Battery current",
+                                                 unique_id="whether-batterycurrent",
+                                                 device_class="current",
+                                                 unit_of_measurement="mA",
+                                                 value_template="{{ value_json.battery_current }}",
+                                                 state_topic=self._topic)))
 
         if self.CPU in self._sensors:
             self._payload.append((self._sensors[self.CPU], self.cpu))
@@ -156,6 +170,11 @@ class HomeAssistant:
                                                  device_class="temperature",
                                                  unit_of_measurement="C",
                                                  value_template="{{ value_json.cpu_temp }}",
+                                                 state_topic=self._topic)))
+            self._client.publish("homeassistant/sensor/cpuwifi/config",
+                                 json.dumps(dict(name="Wifi signal strength",
+                                                 unique_id="whether-cpuwifi",
+                                                 value_template="{{ value_json.cpu_wifi }}",
                                                  state_topic=self._topic)))
 
     def _mqttClient(self):
@@ -195,12 +214,18 @@ class HomeAssistant:
     def battery(self, rg, payload):
         c = meanTagValue(rg.events(), rg.BATTERY_CHARGE_PERCENTAGE)
         t = meanTagValue(rg.events(), rg.BATTERY_TEMPERATURE)
+        v = meanTagValue(rg.events(), rg.BATTERY_VOLTAGE)
+        a = meanTagValue(rg.events(), rg.BATTERY_CURRENT)
         payload['battery_charge'] = c
         payload['battery_temp'] = t
+        payload['battery_voltage'] = v
+        payload['battery_current'] = a
 
     def cpu(self, rg, payload):
         t = meanTagValue(rg.events(), rg.CPU_TEMPERATURE)
+        s = int(meanTagValue(rg.events(), rg.WIFI_SIGNAL_STRENGTH))
         payload['cpu_temp'] = t
+        payload['cpu_wifi'] = s
 
     def payload(self):
         '''Create the payload for the upload.

@@ -32,6 +32,8 @@ class PiJuice(Sampler):
     BATTERY_STATUS = "status"              #: Event tag for battery status.
     BATTERY_CHARGE_PERCENTAGE = "charge"   #: Event tag for battery charge percentage.
     BATTERY_TEMPERATURE = "temperature"    #: Event tag for battery temperature.
+    BATTERY_VOLTAGE = "voltage"            #: Event tag for battery voltage in mV.
+    BATTERY_CURRENT = "current"            #: Event tag for battery current in mA.
 
 
     def __init__(self, id, ring, period = 1):
@@ -44,4 +46,6 @@ class PiJuice(Sampler):
         :returns: a dict'''
         return {self.BATTERY_STATUS: self._pijuice.status.GetStatus()['data']['battery'],
                 self.BATTERY_CHARGE_PERCENTAGE: self._pijuice.status.GetChargeLevel()['data'],
-                self.BATTERY_TEMPERATURE: self._pijuice.status.GetBatteryTemperature()['data']}
+                self.BATTERY_TEMPERATURE: self._pijuice.status.GetBatteryTemperature()['data'],
+                self.BATTERY_VOLTAGE: self._pijuice.status.GetBatteryVoltage()['data'],
+                self.BATTERY_CURRENT: self._pijuice.status.GetBatteryCurrent()['data']}
