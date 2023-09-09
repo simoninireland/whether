@@ -70,7 +70,8 @@ MQTT_IMAGE = docker.io/library/eclipse-mosquitto:latest
 MQTT_CONFIG = mosquitto.conf
 MQTT_DOCKER_OPTIONS = \
 	--name $(MQTT_NAME) \
-	-p 1883:1883 -p 9001:9001
+	-p 1883:1883 -p 9001:9001 \
+	--mount type=bind,src=$(PWD)/$(MQTT_CONFIG),target=/mosquitto/config/mosquitto.conf
 
 # Data collection and analysis
 TZ = Europe/London
@@ -176,7 +177,9 @@ server:
 
 # Deploy the MQTT broker container
 broker:
-	$(DOCKER) run -d $(MQTT_DOCKER_OPTIONS) $(MQTT_IMAGE)
+	#$(MKDIR) mosquitto
+	#$(DOCKER) run -d $(MQTT_DOCKER_OPTIONS) -v mosquitto:/mosquitto/log $(MQTT_IMAGE)
+	mosquitto -c ./mosquitto.conf &
 
 # Clean generated files
 clean:
@@ -205,6 +208,7 @@ Available targets:
    make env          create a development virtual environment
    make calibrate    perform sensor calibration
    make server       deploy a Home Assistant server locally
+   make broker       deploy an MQTT broker locally
    make clean        clean up the build
    make reallyclean  clean up the virtualenv as well
 
