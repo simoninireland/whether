@@ -37,6 +37,12 @@ class NullProcessTree(ProcessTree):
         pass
 
 
+# Skip[ tests that actually instanciate se4nsors if we're on a system
+# without any (i.e., a Linux workstation)
+import board
+NoHardwarePins = ('D14' not in board.__dict__)
+
+
 # ---------- Tests----------
 
 # The sample YAML file
@@ -51,7 +57,7 @@ class ProcessTreeTest(unittest.TestCase):
 
     def testSimpleCase(self):
         '''Test a simple passing case.'''
-        tree = NullProcessTree(StringIO('''
+        _ = NullProcessTree(StringIO('''
         location:
           sensors:
           - sensor:
@@ -62,14 +68,14 @@ class ProcessTreeTest(unittest.TestCase):
 
         # no location: at top-level
         with self.assertRaises(ProcessTreeFileParserException):
-            tree = NullProcessTree(StringIO('''
+            _ = NullProcessTree(StringIO('''
             sensors:
             - sensor:
             '''))
 
         # other top-level
         with self.assertRaises(ProcessTreeFileParserException):
-            tree = NullProcessTree(StringIO('''
+            _ = NullProcessTree(StringIO('''
             location:
               sensors:
               - sensor:
@@ -79,7 +85,7 @@ class ProcessTreeTest(unittest.TestCase):
 
     def testMainElements(self):
         '''Test we recognise the main elements.'''
-        tree = NullProcessTree(StringIO('''
+        _ = NullProcessTree(StringIO('''
         location:
           sensors:
           - sensor:
@@ -132,11 +138,12 @@ class ProcessTreeTest(unittest.TestCase):
 
     def testSample(self):
         '''Test we can parse the sample file.'''
-        tree = NullProcessTree(sample_process_tree_file)
+        _ = NullProcessTree(sample_process_tree_file)
 
 
-    # ---------- Loading ----------
+    # ---------- Loading sensors, aggregators, and reporters ----------
 
+    @unittest.skipIf(NoHardwarePins, "No hardware to instanciate against")
     def testSensor(self):
         '''Test we can create a sensor.'''
         tree = ProcessTreeLoader(StringIO('''
@@ -151,6 +158,7 @@ class ProcessTreeTest(unittest.TestCase):
         self.assertIsNotNone(tree.get(123))
         self.assertTrue(isinstance(tree.get(123), DHT22))
 
+    @unittest.skipIf(NoHardwarePins, "No hardware to instanciate against")
     def testSensors(self):
         '''Test we can create several sensors.'''
         tree = ProcessTreeLoader(StringIO('''
@@ -162,11 +170,11 @@ class ProcessTreeTest(unittest.TestCase):
               gpio: D14
           - sensor:
               id: 456
-              class: Anemometer
-              gpio: D14
+              class: DHT22
+              gpio: D15
         '''))
 
         self.assertIsNotNone(tree.get(123))
         self.assertTrue(isinstance(tree.get(123), DHT22))
         self.assertIsNotNone(tree.get(456))
-        self.assertTrue(isinstance(tree.get(456), Anemometer))
+        self.assertTrue(isinstance(tree.get(456), DHT22))
