@@ -28,6 +28,8 @@ SOURCES_SETUP_IN = setup.py.in
 SOURCES_CODE_INIT = \
 	whether/__init__.py
 SOURCES_CODE = \
+	whether/processtree.py \
+	whether/processtreeloader.py \
 	whether/ringbuffer.py \
 	whether/utils.py \
 	whether/sensortypes.py \
@@ -38,14 +40,19 @@ SOURCES_CODE = \
 	whether/rpi.py \
 	whether/homeassistant.py \
 	winddirection.py
+SOURCES_CODE_EXTRA = \
+	winddirectioncalibration.py
 SOURCES_TESTS_INIT = \
 	test/__init__.py
 SOURCES_TESTS = \
-	test/test_ringbuffers.py
+	test/test_ringbuffers.py \
+	test/test_processtree.py
+SOURCES_TESTS_EXTRA = \
+	test/sample_process_tree.yaml
 SOURCES_CHECKS = \
 	checks/dht22/code.py \
 	checks/anemometer/code.py \
-	checks/wind-direction/code.py \
+	checks/wind-direction/code.py
 SOURCES_MASTER = \
 	code.py
 
@@ -61,30 +68,7 @@ SOURCES_EXTRA = \
 	LICENSE \
 	HISTORY
 SOURCES_GENERATED = \
-	winddirectioncalibration.py \
 	TAGS
-
-# Message broker
-MQTT_NAME = mosquitto
-MQTT_IMAGE = docker.io/library/eclipse-mosquitto:latest
-MQTT_CONFIG = mosquitto.conf
-MQTT_DOCKER_OPTIONS = \
-	--name $(MQTT_NAME) \
-	-p 1883:1883 -p 9001:9001 \
-	--mount type=bind,src=$(PWD)/$(MQTT_CONFIG),target=/mosquitto/config/mosquitto.conf
-
-# Data collection and analysis
-TZ = Europe/London
-HOME_ASSISTANT_NAME = homeassistant
-HOME_ASSISTANT_IMAGE = ghcr.io/home-assistant/home-assistant:stable
-HOME_ASSISTANT_CONFIG_DIR = ./home-assistant
-HOME_ASSISTANT_DOCKER_OPTIONS = \
-	--name $(HOME_ASSISTANT_NAME) \
-	--privileged \
-	--restart=unless-stopped \
-	-e TZ=$(TZ) \
-	-v $(HOME_ASSISTANT_CONFIG_DIR):/config \
-	--network=host
 
 
 # ----- Tools -----
@@ -168,18 +152,6 @@ $(VENV):
 
 # Perform sensor calibration
 calibrate: whether/winddirectioncalibration.py
-
-# Deploy the Home Assistant container
-server:
-	$(MKDIR) $(HOME_ASSISTANT_CONFIG_DIR)
-	$(DOCKER) run -d $(HOME_ASSISTANT_DOCKER_OPTIONS) $(HOME_ASSISTANT_IMAGE)
-	@echo "Home Assistant sitting on http://localhost:8123"
-
-# Deploy the MQTT broker container
-broker:
-	#$(MKDIR) mosquitto
-	#$(DOCKER) run -d $(MQTT_DOCKER_OPTIONS) -v mosquitto:/mosquitto/log $(MQTT_IMAGE)
-	mosquitto -c ./mosquitto.conf &
 
 # Clean generated files
 clean:
