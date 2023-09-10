@@ -32,7 +32,7 @@ class DHT22(Sampler):
     :param settings: the settings
     '''
 
-    TEMPERATURE = "temp"   #: Event tag fopr temperature in degrees Celsius.
+    TEMPERATURE = "temp"   #: Event tag for temperature in degrees Celsius.
     HUMIDITY = "hum"       #: Event tag for relative humidity in percent.
 
 
