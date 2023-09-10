@@ -36,11 +36,6 @@ class NullProcessTree(ProcessTree):
     def createReporter(self, r):
         pass
 
-# Monkey-patch the lookup when we're on a machine with no actual pin hardware
-def dummyBoardFromPinName(p):
-    return None
-Sensor.boardPinFromName = staticmethod(dummyBoardFromPinName)
-
 
 # ---------- Tests----------
 
@@ -168,7 +163,7 @@ class ProcessTreeTest(unittest.TestCase):
           - sensor:
               id: 456
               class: Anemometer
-              gpio: D15
+              gpio: D14
         '''))
 
         self.assertIsNotNone(tree.get(123))
