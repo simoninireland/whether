@@ -1,4 +1,5 @@
 python-dotenv
+pyyaml
 paho-mqtt
 adafruit-blinka
 adafruit-circuitpython-lis3dh

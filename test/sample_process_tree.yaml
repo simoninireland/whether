@@ -1,0 +1,98 @@
+location:
+  name: The Smith's House, Kilconquhar, Fife, Scotland
+  latitude: 56.567
+  longitute: -2.133
+  altitude: 11
+
+  sensors:
+  - sensor:
+      id: courtyard_tmphum
+      class: DHT22                                # reports [temp, hum]
+      name: Courtyard teperature and humidity
+      gpio: D4
+      period: 30
+  - sensor:
+      id: courtyard_windspeed
+      class: Anemometer
+      name: Courtyard windspeed
+      gpio: D17
+      period: 30
+      counting_period: 0.01
+  - sensor:
+      id: courtyard_winddir
+      class: WindDirection                        # reports [dir, amgle]
+      name: Courtyard windspeed
+      gpio: SPI0
+      mcp_channel: P0
+      period: 5
+  - sensor:
+      id: courtyard_rainfall
+      class: Rainfall
+      name: Courtyard rainfall
+      gpio: D27
+      period: 30
+
+  aggregators:
+  - aggregator:
+      id: ha-aggregator
+      class: HomeAssistant
+      name: Home assistant aggregator
+      period: 120
+      channels:
+        - channel:
+            id: courtyard_temp
+            name: Courtyard temperature
+            source: courtyard_temp_hum
+            index: 0                             # extract temp
+            report:
+              - value:
+                  name: temperature
+                  operator: mean
+        - channel:
+            id: courtyard_hum
+            name: Courtyard humidity
+            source: courtyard_temp_hum
+            index: 1                             # extract hum
+            report:
+              - value:
+                  name: temperature
+                  operator: mean                 # report mean value
+        - channel:
+            id: courtyard_windspeed
+            name: Courtyard temperature
+            source: courtyard_windspeed
+            report:
+              - value:
+                  name: windspeed
+                  operator: mean                 # report mean value
+              - value:
+                  name: gust
+                  operator: max                  # ...and max value
+        - channel:
+            id: courtyard_winddirection
+            name: Courtyard wind direction
+            source: courtyard_winddir
+            index: 0                             # extract dir
+            report:
+              - value:
+                  id: winddir
+                  operator: mode                 # report modal (most frequent) value
+        - channel:
+            id: courtyard_rainfall
+            name: Courtyard rainfall
+            source: courtyard_rainfall
+            report:
+              - value:
+                  id: rainfall
+                  operator: sum                  # report sum
+
+  reporters:
+  - reporter:
+      id: ha-reporter
+      class: MQTTReporter
+      name: Home Assistant reporter
+      source: ha-aggregator
+      host: ha.home
+      port: 1883
+      topic: homeassistant/sensor
+      discovery-topic: homeassistant/{channel}/config
