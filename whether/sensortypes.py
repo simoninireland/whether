@@ -166,7 +166,7 @@ class Counter(Sensor):
 
     def __init__(self, settings):
         super().__init__(settings)
-        self._pin = settings.get('gpio')
+        self._pin = self.boardPinFromName(settings.get('gpio'))
         self._rising = settings.get('rising', True)
         self._polling = settings.get('counting_period', 0.01)
 
