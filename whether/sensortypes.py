@@ -32,19 +32,42 @@ class Sensor:
     end of each period. (This doesn't have to happen, and some sensors
     may decide not to report if nothing has happened.)
 
-    :param id: a unique id
-    :param ring: the ring buffer to receive events
-    :param period: reporting period in seconds (defaults to 1s)
+    The settings should include at least the following values:
+
+    - id: a unique id for the sensor
+    - period: the reporting period in seconds
+
+    Sub-classes may add other settings.
+
+    :param settings: dict of settings
     '''
 
     TIMESTAMP = "time"  #: Event tag for timestamp, in Unix epoch seconds.
     ID = "id"           #: Event tage for the sensor id.
 
 
-    def __init__(self, id, ring, period = 1):
-        self._id = id
-        self._ring = ring
-        self._period = period
+    def __init__(self, settings):
+        self._id = settings.get('id')
+        self._period = settings.get('period')
+        self._rings = []
+
+
+    # ---------- Helper methods ----------
+
+    @staticmethod
+    def boardPinFromName(pin):
+        '''Expand the pin name using board module. This lets us
+        use names like "D14" in settings that are expanded to
+        "board.D14" for use in code.
+
+        :param pin: the pin name
+        :returns: the pin object'''
+        module = __import__('board')
+        p = module.__dict__[pin]
+        return p
+
+
+    # ---------- Access ----------
 
     def id(self):
         '''Return the sensor's identifier.
@@ -52,12 +75,11 @@ class Sensor:
         :returns: the sensor id'''
         return self._id
 
-    def events(self):
-        '''Return the ring buffer the sensor reports events to.
-        This can then be iteratred to retruiieve the outstanding events,
+    def addOutput(self, ring):
+        '''Add a ring buffer to which the sensor sends samples.
 
-        :returns: the ring buffer'''
-        return self._ring
+        :param ring: the ring buffer'''
+        self._rings.append(ring)
 
     def period(self):
         '''Return the sensor's sensing period.
@@ -73,10 +95,11 @@ class Sensor:
         raise NotImplementedError("sample")
 
     def pushEvent(self, ev):
-        '''Push an event to the sensor's ring buffer.
+        '''Push an event to the sensor's ring buffers.
 
         :param ev: the event'''
-        self._ring.push(ev)
+        for ring in self._rings:
+            ring.push(ev)
 
 
     # ---------- Coroutine interface ----------
@@ -89,12 +112,11 @@ class Sensor:
 class Sampler(Sensor):
     '''A sensor that takes a single sample once in event period.
 
-    :param id: the sensort's identifier
-    :param ring: the ring buffer for reporting events
-    :param period: the reporting period, which is the same as the reporting period'''
+    :param settings: dict of settings
+    '''
 
-    def __init__(self, id, ring, period = 1):
-        super().__init__(id, ring, period)
+    def __init__(self, settings):
+        super().__init__(settings)
 
 
     # ---------- Coroutine interface ----------
@@ -128,30 +150,37 @@ class Counter(Sensor):
     A counter monitors a GPIO pin looking for rising edges. When it
     sees one it calls its :meth:`edge` to record the event.
 
-    :param id: sensor identifier
-    :poram pin: the GPIO pin to monitor
-    :param ring: the ring buffer
-    :param period: the reporting period (defaults to 1s)
-    :param rising: count rising or falling edges (defaults to True)
-    :param polling: the polling period (d2efaults to 10ms)
+    The settings should include at least the following values:
+
+    - gpio: the GPIO pin to count pulses in
+    - rising: True (the default) to count rising pulses, False to count falling pulses
+    - counting_period: the counting (polling) period (defaults to 10ms)
+
+    Sub-classes may add other settings.
+
+    :param settings: dict of settings
     '''
 
     COUNT = "count"     #: Event tag for the count.
 
 
-    def __init__(self, id, pin, ring,
-                 period = 1,
-                 rising = True, polling = 0.01):
-        super().__init__(id, ring, period)
-        self._pin = pin
-        self._rising = rising
-        self._polling = polling
+    def __init__(self, settings):
+        super().__init__(settings)
+        self._pin = settings.get('gpio')
+        self._rising = settings.get('rising', True)
+        self._polling = settings.get('counting_period', 0.01)
 
         # debouncing
-        self._key = keypad.Keys([pin], value_when_pressed=rising, pull=False)
+        self._key = keypad.Keys([self._pin], value_when_pressed=self._rising, pull=False)
 
         # counter state
         self._count = 0           # initial count
+
+    def pin(self):
+        '''Returns the GPIO pin being sampled.
+
+        :returns: the pin'''
+        return self._pin
 
     def count(self):
         '''Return the count of transitions.
@@ -202,11 +231,9 @@ class Counter(Sensor):
 
                     # push into the sensor's ring buffer
                     self.pushEvent(ev)
-                    logger.debug('Sensor {id} pushed count {ev}'.format(id=self.id(),
-                                                                    ev=ev))
+                    logger.debug(f'Sensor {self.id()} pushed count {ev}')
             except Exception as err:
-                logger.error("{id}: {e}".format(id=self.id(),
-                                                e=err))
+                logger.error(f'{self.id()}: {err}')
 
             # reset the counter
             self.reset()
