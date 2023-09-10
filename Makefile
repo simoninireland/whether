@@ -76,7 +76,6 @@ SOURCES_GENERATED = \
 # Base commands
 PYTHON = python3
 PIP = pip
-TOX = tox
 COVERAGE = coverage
 TWINE = twine
 FLAKE8 = flake8
@@ -119,7 +118,7 @@ REQUIREMENTS = requirements.txt
 DEV_REQUIREMENTS = dev-requirements.txt
 
 # Constructed commands
-RUN_TESTS = $(TOX)
+RUN_TESTS = $(PYTHON) -m unittest discover
 RUN_COVERAGE = $(COVERAGE) erase && $(COVERAGE) run -a setup.py test && $(COVERAGE) report -m --include '$(PACKAGENAME)*'
 
 
