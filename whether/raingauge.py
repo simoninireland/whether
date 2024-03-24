@@ -24,10 +24,7 @@ class Raingauge(Counter):
     '''Driver for a tipping-bucket rain gauge. Each tick of the switch
     corresponds to a single emptying of the bucket.
 
-    :param id: the sensor's id
-    :param pin: the GPIO pin of the reed switch
-    :param ring: the ring buffer to receive events
-    :param period: the reporting period
+    :param settings: settings dict
     '''
 
     RAININTENSITY = "rainfall"                 #: Event tag for rain intensity in mm/h.
@@ -35,8 +32,8 @@ class Raingauge(Counter):
     # One tip represents 0.2794mm
     TIPRAINFALL = 0.2794 * (60 * 60)           #: Rainfall in mm/h corresponding to one tip/s.
 
-    def __init__(self, id, pin, ring, period = 1):
-        super().__init__(id, pin, ring, period)
+    def __init__(self, settings):
+        super().__init__(settings)
 
     def rainfall(self, n, dt):
         '''Return the rainfall intensity indicated by n counts in the period dt.

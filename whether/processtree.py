@@ -20,15 +20,7 @@
 import io
 from pathlib import Path
 import yaml
-
-
-class ProcessTreeFileParserException(Exception):
-    '''Exception raised when parsing the YAML file fails.
-
-    :param m: the message'''
-
-    def __init__(self, m):
-        super().__init__(m)
+from whether import onlyDictElement, onlyDictElements
 
 
 class ProcessTree:
@@ -46,12 +38,12 @@ class ProcessTree:
         super().__init__()
         self._metadata = {}
         self._elements = {}
-        self.load(fn)
+        self._load(fn)
 
 
     #---------- File handling ----------
 
-    def load(self, fn):
+    def _load(self, fn):
         '''Load the process tree described in the file.
 
         :param fn: the filename'''
@@ -66,55 +58,24 @@ class ProcessTree:
         else:
             raise Exception(f'Can\'t handle file object {fn}')
 
-        self.parse(t)
+        self._parse(t)
 
-    def _onlyElement(self, d, e):
-        '''Check that d contains exactly one key, which is e.
-
-        :param d: a dict
-        :param e: the only permitted key
-        :returns: the value associated with that key
-        '''
-        ks = d.keys()
-        if len(ks) == 0:
-            raise ProcessTreeFileParserException(f'No required element {e}')
-        elif len(ks) > 1:
-            if e not in ks:
-                raise ProcessTreeFileParserException(f'No required element {e}')
-            else:
-                xs = set(ks) - set([e])
-                raise ProcessTreeFileParserException(f'Extraneous elements {xs}')
-        elif e not in ks:
-            raise ProcessTreeFileParserException(f'No required element {e}')
-        return d[e]
-
-    def _onlyElements(self, l, e):
-        '''Check that l is a list containing dicts of only one
-        key e.
-
-        :param l a list
-        :param e: the only permitted element in dicts of the list
-        :returns: a list of the values associated with that key
-        '''
-        es = list(map(lambda d: self._onlyElement(d, e), l))
-        return es
-
-    def parse(self, t):
+    def _parse(self, t):
         '''Parse a process tree,
 
         :param t: the tree'''
 
         # parse the various top-level elements
-        es = self._onlyElement(t, 'location')
+        es = onlyDictElement(t, 'location')
         for k in es.keys():
             if k == 'sensors':
-                for s in self._onlyElements(es[k], 'sensor'):
+                for s in onlyDictElements(es[k], 'sensor'):
                     self.createSensor(s)
             elif k == 'aggregators':
-                for a in self._onlyElements(es[k], 'aggregator'):
+                for a in onlyDictElements(es[k], 'aggregator'):
                     self.createAggregator(a)
             elif k == 'reporters':
-                for r in self._onlyElements(es[k], 'reporter'):
+                for r in onlyDictElements(es[k], 'reporter'):
                     self.createReporter(r)
             else:
                 # anything else is assumed to be metadata

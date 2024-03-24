@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
+from whether import ProcessTreeFileParserException
+
+
+# ---------- Angular lookup helper ----------
 
 # Angle table for wind cardinal point directions
 windDirectionAngle = dict()
@@ -27,6 +31,43 @@ for d in ["N", "NNE", "NE", "ENE",
           "W", "WNW", "NW", "NNW"]:
     windDirectionAngle[d] = a
     a += 360 / 16
+
+
+# ---------- YAML parser helpers ----------
+
+def onlyDictElement(d, e):
+    '''Check that d contains exactly one key, which is e.
+
+    :param d: a dict
+    :param e: the only permitted key
+    :returns: the value associated with that key
+    '''
+    ks = d.keys()
+    if len(ks) == 0:
+        raise ProcessTreeFileParserException(f'No required element {e}')
+    elif len(ks) > 1:
+        if e not in ks:
+            raise ProcessTreeFileParserException(f'No required element {e}')
+        else:
+            xs = set(ks) - set([e])
+            raise ProcessTreeFileParserException(f'Extraneous elements {xs}')
+    elif e not in ks:
+        raise ProcessTreeFileParserException(f'No required element {e}')
+    return d[e]
+
+
+def onlyDictElements(l, e):
+    '''Check that l is a list containing dicts of only one
+    key e.
+
+    :param l a list
+    :param e: the only permitted element in dicts of the list
+    :returns: a list of the values associated with that key
+    '''
+    es = list(map(lambda d: onlyDictElement(d, e), l))
+    return es
+
+
 
 
 def angleForDirection(d):

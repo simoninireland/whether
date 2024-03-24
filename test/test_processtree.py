@@ -25,7 +25,7 @@ from whether import *
 
 # ---------- Testing dummy harness ----------
 
-# A null process tree that does does the parsing
+# A null process tree that just does the parsing
 class NullProcessTree(ProcessTree):
     def createSensor(self, s):
         pass
@@ -37,7 +37,12 @@ class NullProcessTree(ProcessTree):
         pass
 
 
-# Skip[ tests that actually instanciate se4nsors if we're on a system
+# A dummy sensor
+class NullSensor(Sensor):
+    pass
+
+
+# Skip tests that actually instanciate sensors if we're on a system
 # without any (i.e., a Linux workstation)
 import board
 NoHardwarePins = ('D14' not in board.__dict__)
@@ -50,6 +55,7 @@ NoHardwarePins = ('D14' not in board.__dict__)
 # to the process tree file format
 source_path = Path(__file__).resolve()
 sample_process_tree_file = Path(source_path.parent, 'sample_process_tree.yaml')
+
 
 class ProcessTreeTest(unittest.TestCase):
 
@@ -143,9 +149,29 @@ class ProcessTreeTest(unittest.TestCase):
 
     # ---------- Loading sensors, aggregators, and reporters ----------
 
+    def testSensor(self):
+        '''Test we can create several (dummy) sensors.'''
+        tree = ProcessTreeLoader(StringIO('''
+        location:
+          sensors:
+          - sensor:
+              id: 123
+              class: NullSensor
+              gpio: D14
+           - sensor:
+              id: 456
+              class: NullSensor
+              gpio: D15
+        '''))
+
+        self.assertIsNotNone(tree.get(123))
+        self.assertTrue(isinstance(tree.get(123), NullSensor))
+        self.assertIsNotNone(tree.get(456))
+        self.assertTrue(isinstance(tree.get(456), NullSensor))
+
     @unittest.skipIf(NoHardwarePins, "No hardware to instanciate against")
     def testSensor(self):
-        '''Test we can create a sensor.'''
+        '''Test we can create a (real) sensor.'''
         tree = ProcessTreeLoader(StringIO('''
         location:
           sensors:
@@ -160,7 +186,7 @@ class ProcessTreeTest(unittest.TestCase):
 
     @unittest.skipIf(NoHardwarePins, "No hardware to instanciate against")
     def testSensors(self):
-        '''Test we can create several sensors.'''
+        '''Test we can create several (different, real) sensors.'''
         tree = ProcessTreeLoader(StringIO('''
         location:
           sensors:
@@ -170,11 +196,11 @@ class ProcessTreeTest(unittest.TestCase):
               gpio: D14
           - sensor:
               id: 456
-              class: DHT22
+              class: Anemometer
               gpio: D15
         '''))
 
         self.assertIsNotNone(tree.get(123))
         self.assertTrue(isinstance(tree.get(123), DHT22))
         self.assertIsNotNone(tree.get(456))
-        self.assertTrue(isinstance(tree.get(456), DHT22))
+        self.assertTrue(isinstance(tree.get(456), Anemometer))

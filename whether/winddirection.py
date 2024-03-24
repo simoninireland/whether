@@ -24,45 +24,57 @@ import digitalio
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 from whether import Sampler
+from winddirectioncalibration import windDirections
 
 
 class WindDirection(Sampler):
-    '''Driver for a resistor network wind direction sensor. The
-    sensor is connected to an analogue-to-digital converter through
+    '''Driver for a resistor network wind direction sensor. The sensor
+    is connected to anMCP3008 analogue-to-digital converter through
     the SPI interface.
 
     The object takes a calibration table mapping cardinal points to
     raw ADC values that is used to translate the sensor readings
     into meaningful form.
 
-    :param id: the sensor's id
-    :param cs: the chip select pin for the SPI device
-    :param ch: the a2d channel for the resistor network
-    :param cal: calibration table
-    :param ring: the ring buffer to receive events
-    :param period: the reporting period
+    Settings should include:
 
+    - mcp_select: the chip select pin for the SPI device
+    - mcp_channel: the MCP channel for the resistor network
+
+    :param settings: the settings dict
     '''
 
     DIRECTION = "winddir"    #: Event tag for wind direction as a string.
     RAW = "windrawadc"       #: Event tag for raw ADC value.
 
+    @staticmethod
+    def mcpChannelFromName(ch):
+        '''Expand the channel name using the MCP module. This lets us
+        use names like "P0" in settings that are expanded to
+        "MCP.P0" for use in code.
 
-    def __init__(self, id, cs, ch, cal, ring, period = 1):
-        super().__init__(id, ring, period)
+        :param ch: the channel name
+        :returns: the channel'''
+        module = __import__('adafruit_mcp3xxx.mcp3008')
+        channel = module.__dict__[ch]
+        return channel
+
+    def __init__(self, settings):
+        super().__init__(settings)
 
         # calibration data
-        self._calibration = cal
+        self._calibration = windDirections
 
         # SPI interface (assumed to be SPI0)
         self._spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
-        self._cs = digitalio.DigitalInOut(cs)
+        self._cs = digitalio.DigitalInOut(settings.get('mcp_select'))
 
         # create the MCP3008
         self._mcp = MCP.MCP3008(self._spi, self._cs)
 
         # resistor network channel
-        self._channel = AnalogIn(self._mcp, ch)
+        ch = settings.get('mcp_channel')
+        self._channel = AnalogIn(self._mcp, self.mcpChannelFromName(ch))
 
     def direction(self, r):
         '''Return the wind direction.

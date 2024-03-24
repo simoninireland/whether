@@ -22,7 +22,7 @@ location:
       id: courtyard_winddir
       class: WindDirection                        # reports [dir, amgle]
       name: Courtyard windspeed
-      gpio: SPI0
+      mcp_select: D5
       mcp_channel: P0
       period: 5
   - sensor:
@@ -46,7 +46,7 @@ location:
             index: 0                             # extract temp
             report:
               - value:
-                  name: temperature
+                  id: temperature
                   operator: mean
         - channel:
             id: courtyard_hum
@@ -55,7 +55,7 @@ location:
             index: 1                             # extract hum
             report:
               - value:
-                  name: temperature
+                  id: temperature
                   operator: mean                 # report mean value
         - channel:
             id: courtyard_windspeed
@@ -63,10 +63,10 @@ location:
             source: courtyard_windspeed
             report:
               - value:
-                  name: windspeed
+                  id: windspeed
                   operator: mean                 # report mean value
               - value:
-                  name: gust
+                  id: gust
                   operator: max                  # ...and max value
         - channel:
             id: courtyard_winddirection
@@ -95,4 +95,4 @@ location:
       host: ha.home
       port: 1883
       topic: homeassistant/sensor
-      discovery-topic: homeassistant/{channel}/config
+      discovery_topic: homeassistant/{channel}/config

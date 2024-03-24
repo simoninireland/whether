@@ -21,7 +21,8 @@ logger = logging.getLogger("whether")
 
 # Utilities
 from .ringbuffer import RingBuffer
-from .utils import angleForDirection, modalTagValue, meanTagValue, maxTagValue
+from .exceptions import ProcessTreeFileParserException
+from .utils import angleForDirection, onlyDictElement, onlyDictElements
 
 # Sensor types
 from .sensortypes import Sensor, Sampler, Counter
@@ -34,9 +35,14 @@ from .raingauge import Raingauge
 #from .pijuice import PiJuice
 from .rpi import RPi
 
-# Reporters
+# Aggregators
+from .aggregator import Aggregator
 from .homeassistant import HomeAssistant
 
+# Reporters
+#from .reporter import Reporter
+#from .mqtt import MQTT
+
 # Process tree handling
-from .processtree import ProcessTree, ProcessTreeFileParserException
+from .processtree import ProcessTree
 from .processtreeloader import ProcessTreeLoader

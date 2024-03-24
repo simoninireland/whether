@@ -1,4 +1,4 @@
-# Uploader for Home Assistant
+# Aggregator for Home Assistant
 #
 # Copyright (C) 2023 Simon Dobson
 #
@@ -17,24 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with whether. If not, see <http://www.gnu.org/licenses/gpl.html>.
 
-#import socketpool
-#import adafruit_requests as requests
-import json
-import asyncio
-import requests
-import paho.mqtt.client as mqtt
-from whether import angleForDirection, modalTagValue, meanTagValue, maxTagValue, logger
+from whether import Aggregator, angleForDirection, logger
 
 
-class HomeAssistant:
-    '''Reporter for uploading data to a Home Assistant server over MQTT.
+class HomeAssistant(Aggregator):
+    '''Aggregator for generating data for a Home Assistant server over MQTT.
 
-    :param server: the MQTT server
-    :param username: user name
-    :param password: password
-    :param topic: topic to publish data to
-    :param sensors: dict mapping keys to sensors
-    :param period: (optional) reporting period in seconds (defaults to 60s)
+    :param settings: settings dict
     '''
 
     # Sensor type keys
@@ -47,9 +36,8 @@ class HomeAssistant:
     CPU = 'c'                #: CPU.
 
 
-    def __init__(self, server, username, password, topic,
-                 sensors, period = 60):
-        super().__init__()
+    def __init__(self, settings):
+        super().__init__(settings)
         self._server = server
         self._username = username
         self._password = password

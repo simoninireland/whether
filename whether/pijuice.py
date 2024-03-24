@@ -24,9 +24,12 @@ import pijuice
 class PiJuice(Sampler):
     '''Driver for a PiJuice power HAT.
 
-    :param id: sensor identifier
-    :param ring: the ring buffer
-    :param period: the sampling perdiod in seconds
+    Settings may also include:
+
+    - i2c: the I2C interface the PiJuice os attached to (defaults to 1)
+    - i2c_addr: the I2C slave address for the PiJuice (defaults to 0x14)
+
+    :param settings: settings dict
     '''
 
     BATTERY_STATUS = "status"              #: Event tag for battery status.
@@ -36,9 +39,11 @@ class PiJuice(Sampler):
     BATTERY_CURRENT = "current"            #: Event tag for battery current in mA.
 
 
-    def __init__(self, id, ring, period = 1):
-        super().__init__(id, ring, period)
-        self._pijuice = pijuice.PiJuice(1, 0x14)
+    def __init__(self, settings):
+        super().__init__(settings)
+        i2c = settings.get('i2c', 1)
+        i2c_addr = settings.get('i2c_addr', 0x14)
+        self._pijuice = pijuice.PiJuice(i2c, i2c_addr)
 
     def sample(self):
         '''Take a sample from the bettery.

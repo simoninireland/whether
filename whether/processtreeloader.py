@@ -21,7 +21,7 @@ import io
 import sys
 from pathlib import Path
 import yaml
-from whether import ProcessTree
+from whether import ProcessTree, logger
 
 
 class ProcessTreeLoader(ProcessTree):
@@ -70,7 +70,8 @@ class ProcessTreeLoader(ProcessTree):
         assumed to be built-in to whether and is qualified against
         the appropriate default package name.
 
-        :param settings: the settings'''
+        :param settings: the settings
+        :returns: the new object'''
         fqcn = settings.get('class')
         (pn, cn) = self._fullClassName(fqcn)
 
@@ -88,15 +89,20 @@ class ProcessTreeLoader(ProcessTree):
         :param s: a dict describing the sensor'''
         sensor = self.instanciate(s)
         self.add(sensor)
+        logger.info(f'Loaded sensor {sensor.id()} ({sensor.__class__.__name__})')
 
-    def createAggregator(self, s):
+    def createAggregator(self, a):
         '''Add an aggregator.
 
         :param a: a dict describing the aggregator'''
-        raise NotImplementedError('addAggregator')
+        aggregator = self.instanciate(a)
+        self.add(aggregator)
+        logger.info(f'Loaded aggregator {aggregator.id()} ({aggregator.__class__.__name__})')
 
     def createReporter(self, r):
         '''Add a reporter.
 
         :param r: a dict describing the reporter'''
-        raise NotImplementedError('addReporter')
+        reporter = self.instanciate(r)
+        self.add(reporter)
+        logger.info(f'Loaded reporter {reporter.id()} ({reporter.__class__.__name__})')

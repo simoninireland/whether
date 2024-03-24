@@ -28,9 +28,7 @@ from whether import Sampler
 class RPi(Sampler):
     '''Driver for thr Raspberry Pi's onboard sensors.
 
-    :param id: sensor identifier
-    :param ring: the ring buffer
-    :param period: the sampling perdiod in seconds
+    :param settings: settings dict
     '''
 
     THERMAL_ZONE_FILE = "/sys/class/thermal/thermal_zone0/temp"  #: File for the CPU's thermal zone.
@@ -39,8 +37,8 @@ class RPi(Sampler):
     CPU_TEMPERATURE = "temperature"                              #: Event tag for CPU temperature.
     WIFI_SIGNAL_STRENGTH = "rssi"                                #: Event tag for wifi signal strength.
 
-    def __init__(self, id, ring, period = 1):
-        super().__init__(id, ring, period)
+    def __init__(self, settings):
+        super().__init__(settings)
 
     def sampleTemperature(self):
         '''Return the current CPU temperature.
